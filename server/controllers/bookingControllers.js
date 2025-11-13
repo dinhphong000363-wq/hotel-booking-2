@@ -132,15 +132,32 @@ export const getUserBookings = async (req, res) => {
         res.json({ success: false, message: "Failed to fetch bookings" });
     }
 };
+// Owner: list bookings of hotels the owner owns with filters
 export const getHotelBookings = async (req, res) => {
     try {
-        const hotel = await Hotel.findOne({ owner: req.auth.userId });
+        const ownerId = req.user._id;
+        const { status, from, to } = req.query;
 
-        if (!hotel) {
+        // Find all approved hotels owned by this owner
+        const hotels = await Hotel.find({ owner: ownerId });
+
+        if (!hotels || hotels.length === 0) {
             return res.json({ success: false, message: "No Hotel found" });
         }
 
-        const bookings = await Booking.find({ hotel: hotel._id })
+        const hotelIds = hotels.map(h => h._id.toString());
+
+        const filter = { hotel: { $in: hotelIds } };
+        if (status) {
+            filter.status = status;
+        }
+        if (from || to) {
+            filter.checkInDate = {};
+            if (from) filter.checkInDate.$gte = new Date(from);
+            if (to) filter.checkInDate.$lte = new Date(to);
+        }
+
+        const bookings = await Booking.find(filter)
             .populate("room hotel user")
             .sort({ createdAt: -1 });
 
@@ -152,13 +169,49 @@ export const getHotelBookings = async (req, res) => {
 
         res.json({
             success: true,
-            dashboardData: { totalBookings, totalRevenue },
+            bookings,
+            metrics: { totalBookings, totalRevenue },
         });
     } catch (error) {
         res.json({
             success: false,
             message: "Failed to fetch bookings"
         });
+    }
+};
+
+// Owner: update booking status (confirm, cancel, complete)
+export const updateBookingStatus = async (req, res) => {
+    try {
+        const ownerId = req.user._id;
+        const { id } = req.params;
+        const { status } = req.body; // expected: confirmed | cancelled | completed
+
+        if (!["confirmed", "cancelled", "completed"].includes(status)) {
+            return res.json({ success: false, message: "Invalid status" });
+        }
+
+        const booking = await Booking.findById(id);
+        if (!booking) {
+            return res.json({ success: false, message: "Booking not found" });
+        }
+
+        const hotel = await Hotel.findById(booking.hotel);
+        if (!hotel || hotel.owner.toString() !== ownerId.toString()) {
+            return res.json({ success: false, message: "Access denied" });
+        }
+
+        // Business rules: cannot confirm/cancel after completed
+        if (booking.status === "completed") {
+            return res.json({ success: false, message: "Booking already completed" });
+        }
+
+        booking.status = status;
+        await booking.save();
+
+        res.json({ success: true, message: "Status updated", booking });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
     }
 };
 export const stripePayment = async(req, res)=>{
@@ -200,6 +253,35 @@ export const stripePayment = async(req, res)=>{
         
     }
 }
+
+// API để xóa một đặt phòng
+// DELETE /api/bookings/:id
+export const deleteBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user._id;
+
+        // Tìm booking và kiểm tra xem nó có thuộc về user này không
+        const booking = await Booking.findById(id);
+
+        if (!booking) {
+            return res.json({ success: false, message: "Booking not found" });
+        }
+
+        // Kiểm tra xem booking có thuộc về user này không
+        if (booking.user.toString() !== userId.toString()) {
+            return res.json({ success: false, message: "Unauthorized to delete this booking" });
+        }
+
+        // Xóa booking
+        await Booking.findByIdAndDelete(id);
+
+        res.json({ success: true, message: "Booking deleted successfully" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Failed to delete booking" });
+    }
+};
 
 
 

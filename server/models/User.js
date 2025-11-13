@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
     image: { type: String, required: true },
     role: {
       type: String,
-      enum: ["user", "hotelOwner"],
+      enum: ["user", "hotelOwner", "admin"],
       default: "user",
     },
     recentSearchedCities: [{ type: String, required: true }],

@@ -89,3 +89,82 @@ export const toggleRoomAvailability = async (req, res) => {
   }
 };
 
+// API để cập nhật một phòng
+// PUT /api/rooms/:id
+export const updateRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { roomType, pricePerNight, amenities } = req.body;
+
+    // Tìm khách sạn theo chủ sở hữu
+    const hotel = await Hotel.findOne({ owner: req.auth.userId });
+    if (!hotel) {
+      return res.json({ success: false, message: "No Hotel found" });
+    }
+
+    // Tìm phòng và kiểm tra xem nó có thuộc về hotel này không
+    const room = await Room.findById(id);
+    if (!room) {
+      return res.json({ success: false, message: "Room not found" });
+    }
+
+    if (room.hotel.toString() !== hotel._id.toString()) {
+      return res.json({ success: false, message: "Unauthorized to update this room" });
+    }
+
+    // Cập nhật thông tin phòng
+    if (roomType) room.roomType = roomType;
+    if (pricePerNight) room.pricePerNight = +pricePerNight;
+    if (amenities) room.amenities = JSON.parse(amenities);
+
+    // Nếu có ảnh mới, tải lên Cloudinary
+    if (req.files && req.files.length > 0) {
+      const uploadImages = req.files.map(async (file) => {
+        const response = await cloudinary.uploader.upload(file.path);
+        return response.secure_url;
+      });
+      const newImages = await Promise.all(uploadImages);
+      room.images = newImages;
+    }
+
+    await room.save();
+
+    res.json({ success: true, message: "Room updated successfully" });
+  } catch (error) {
+    console.error("❌ Error updating room:", error.message);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// API để xóa một phòng
+// DELETE /api/rooms/:id
+export const deleteRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Tìm khách sạn theo chủ sở hữu
+    const hotel = await Hotel.findOne({ owner: req.auth.userId });
+    if (!hotel) {
+      return res.json({ success: false, message: "No Hotel found" });
+    }
+
+    // Tìm phòng và kiểm tra xem nó có thuộc về hotel này không
+    const room = await Room.findById(id);
+    if (!room) {
+      return res.json({ success: false, message: "Room not found" });
+    }
+
+    if (room.hotel.toString() !== hotel._id.toString()) {
+      return res.json({ success: false, message: "Unauthorized to delete this room" });
+    }
+
+    // Xóa phòng
+    await Room.findByIdAndDelete(id);
+
+    res.json({ success: true, message: "Room deleted successfully" });
+  } catch (error) {
+    console.error("❌ Error deleting room:", error.message);
+    res.json({ success: false, message: error.message });
+  }
+};
+

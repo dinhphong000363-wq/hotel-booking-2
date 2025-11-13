@@ -5,7 +5,7 @@ import { useAppContext } from '../../conext/AppContext'
 import toast from 'react-hot-toast'
 
 const AddRoom = () => {
-    const { axios, getToken } = useAppContext();
+    const { axios, getToken, fetchRooms } = useAppContext();
 
     const [images, setImages] = useState({
         1: null,
@@ -65,6 +65,7 @@ const AddRoom = () => {
 
             if (data.success) {
                 toast.success(data.message);
+                await fetchRooms();
                 setInputs({
                     roomType: '',
                     pricePerNight: '',

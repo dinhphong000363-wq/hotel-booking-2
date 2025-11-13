@@ -15,6 +15,8 @@ export const AppProvider = ({ children }) => {
     const { getToken } = useAuth();
 
     const [isOwner, setIsOwner] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [userRole, setUserRole] = useState(null);
     const [showHotelReg, setShowHotelReg] = useState(false);
     const [searchedCities, setSearchedCities] = useState([]);
     const [rooms, setRooms] = useState([]);
@@ -42,7 +44,9 @@ export const AppProvider = ({ children }) => {
             });
 
             if (data.success) {
+                setUserRole(data.role);
                 setIsOwner(data.role === "hotelOwner");
+                setIsAdmin(data.role === "admin");
                 setSearchedCities(data.recentSearchedCities || []);
             } else {
                 setTimeout(()=>{
@@ -70,6 +74,10 @@ export const AppProvider = ({ children }) => {
         getToken,
         isOwner,
         setIsOwner,
+        isAdmin,
+        setIsAdmin,
+        userRole,
+        setUserRole,
         axios,
         showHotelReg,
         setShowHotelReg,
@@ -77,6 +85,7 @@ export const AppProvider = ({ children }) => {
         setSearchedCities,
         rooms,
         setRooms,
+        fetchRooms,
     };
 
     return (

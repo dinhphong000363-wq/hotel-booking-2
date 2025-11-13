@@ -3,10 +3,13 @@ import Title from '../components/Title';
 import { assets } from '../assets/assets';
 import { useAppContext } from '../conext/AppContext';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../components/ConfirmModal';
 
 const MyBookings = () => {
     const { axios, getToken, user } = useAppContext();
     const [booking, setBookings] = useState([]);
+    const [deleteConfirm, setDeleteConfirm] = useState(null); // { bookingId, hotelName }
+    const [deleting, setDeleting] = useState(false);
 
     const fetchUserBookings = async () => {
         try {
@@ -37,6 +40,46 @@ const MyBookings = () => {
         } catch (error) {
             toast.error(error.message)
 
+        }
+    }
+
+    // Mở modal xác nhận xóa
+    const handleDeleteClick = (booking) => {
+        setDeleteConfirm({
+            bookingId: booking._id,
+            hotelName: booking.hotel?.name || 'Unknown Hotel'
+        });
+    }
+
+    // Đóng modal xác nhận xóa
+    const handleCloseDeleteConfirm = () => {
+        setDeleteConfirm(null);
+    }
+
+    // Xóa đơn đặt phòng
+    const handleDelete = async () => {
+        if (!deleteConfirm) return;
+
+        setDeleting(true);
+        try {
+            const { data } = await axios.delete(`/api/bookings/${deleteConfirm.bookingId}`, {
+                headers: {
+                    Authorization: `Bearer ${await getToken()}`,
+                },
+            });
+
+            if (data.success) {
+                toast.success('Đã xóa đơn đặt phòng thành công');
+                handleCloseDeleteConfirm();
+                // Cập nhật danh sách bookings sau khi xóa
+                setBookings(booking.filter(b => b._id !== deleteConfirm.bookingId));
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message || 'Không thể xóa đơn đặt phòng');
+        } finally {
+            setDeleting(false);
         }
     }
 
@@ -125,7 +168,7 @@ const MyBookings = () => {
                         </div>
 
                         {/* payment */}
-                        <div className="flex flex-col items-start justify-center pt-3">
+                        <div className="flex flex-col items-start justify-center pt-3 gap-2">
                             <div className="flex items-center gap-2">
                                 <div
                                     className={`h-3 w-3 rounded-full ${booking.isPaid ? 'bg-green-500' : 'bg-red-500'
@@ -139,14 +182,33 @@ const MyBookings = () => {
                                 </p>
                             </div>
                             {!booking.isPaid && (
-                                <button onClick={() => handlePayment(booking._id)} className="px-4 py-1.5 mt-4 text-xs border border-gray-400 rounded-full hover:bg-gray-50 transition-all cursor-pointer">
+                                <button onClick={() => handlePayment(booking._id)} className="px-4 py-1.5 text-xs border border-gray-400 rounded-full hover:bg-gray-50 transition-all cursor-pointer">
                                     Pay Now
                                 </button>
                             )}
+                            <button
+                                onClick={() => handleDeleteClick(booking)}
+                                className="px-4 py-1.5 text-xs border border-red-400 text-red-600 rounded-full hover:bg-red-50 transition-all cursor-pointer"
+                            >
+                                Xóa đơn
+                            </button>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Modal xác nhận xóa */}
+            <ConfirmModal
+                isOpen={!!deleteConfirm}
+                onClose={handleCloseDeleteConfirm}
+                onConfirm={handleDelete}
+                title="Xác nhận xóa đơn đặt phòng"
+                message={`Bạn có chắc chắn muốn xóa đơn đặt phòng tại ${deleteConfirm?.hotelName || ''}? Hành động này không thể hoàn tác.`}
+                confirmText="Xóa đơn"
+                variant="info"
+                loading={deleting}
+                highlightText={deleteConfirm?.hotelName}
+            />
         </div>
     );
 };

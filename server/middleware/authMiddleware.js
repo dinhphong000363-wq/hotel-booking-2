@@ -26,3 +26,39 @@ export const protect = async (req, res, next) => {
     res.status(500).json({ success: false, message: "Authentication error" });
   }
 };
+
+// Middleware to check if user is admin
+export const admin = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.json({ success: false, message: "Not authenticated" });
+    }
+
+    if (req.user.role !== "admin") {
+      return res.json({ success: false, message: "Access denied. Admin only." });
+    }
+
+    next();
+  } catch (error) {
+    console.error("❌ Error in admin middleware:", error);
+    res.status(500).json({ success: false, message: "Authorization error" });
+  }
+};
+
+// Middleware to check if user is hotel owner
+export const owner = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.json({ success: false, message: "Not authenticated" });
+    }
+
+    if (req.user.role !== "hotelOwner") {
+      return res.json({ success: false, message: "Access denied. Owner only." });
+    }
+
+    next();
+  } catch (error) {
+    console.error("❌ Error in owner middleware:", error);
+    res.status(500).json({ success: false, message: "Authorization error" });
+  }
+};

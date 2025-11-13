@@ -1,14 +1,13 @@
 import React from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { assets } from '../../assets/assets'
-import { UserButton } from '@clerk/clerk-react'
 
 const Sidebar = () => {
     const sidebarLinks = [
-        { name: 'Dashboard', path: '/owner', icon: assets.dashboardIcon },
-        { name: 'Add Room', path: '/owner/add-room', icon: assets.addIcon },
-        { name: 'List Room', path: '/owner/list-room', icon: assets.listIcon },
-        { name: 'Bookings', path: '/owner/bookings', icon: assets.listIcon },
+        { name: '📊 Thống kê', path: '/admin/dashboard', icon: assets.dashboardIcon },
+        { name: 'Duyệt Khách Sạn', path: '/admin', icon: assets.dashboardIcon },
+        { name: 'Quản Lý Khách Sạn', path: '/admin/hotels', icon: assets.homeIcon },
+        { name: 'Quản Lý Người Dùng', path: '/admin/users', icon: assets.groupIcon },
     ]
     return (
         <div className='md:w-64 w-16 border-r h-full text-base border-gray-300 pt-4 flex flex-col transition-all duration-300'>
@@ -24,12 +23,13 @@ const Sidebar = () => {
                         }`
                     }
                 >
-                   <img src={item.icon} alt={item.icon} className='min-h-6 min-w-6'  />
-                   <p className='md:block hidden text-center'>{item.name}</p>
-                </NavLink>    
-             ))}
+                    <img src={item.icon} alt={item.icon} className='min-h-6 min-w-6' />
+                    <p className='md:block hidden text-center'>{item.name}</p>
+                </NavLink>
+            ))}
         </div >
     )
 }
 
 export default Sidebar
+

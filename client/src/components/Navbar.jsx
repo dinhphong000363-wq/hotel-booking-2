@@ -26,6 +26,28 @@ const BookIcon = () => {
     );
 };
 
+const HeartIcon = () => {
+    return (
+        <svg
+            className="w-6 h-6 text-gray-700"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M3.172 5.172a4 4 0 015.656 0L12 8.343l3.172-3.171a4 4 0 115.656 5.656L12 21.657 3.172 10.828a4 4 0 010-5.656z"
+            />
+        </svg>
+    );
+};
+
 const Navbar = () => {
     const navLinks = [
         { name: "Home", path: "/" },
@@ -38,7 +60,7 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { openSignIn } = useClerk();
     const location = useLocation();
-    const { user, navigate, isOwner, setShowHotelReg } = useAppContext();
+    const { user, navigate, isOwner, isAdmin, setShowHotelReg } = useAppContext();
 
     useEffect(() => {
         if (location.pathname !== "/") {
@@ -55,11 +77,10 @@ const Navbar = () => {
 
     return (
         <nav
-            className={`fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-24 xl:px-32 transition-all duration-500 z-50 ${
-                isScrolled
-                    ? "bg-white/80 shadow-md text-gray-700 backdrop-blur-lg py-3 md:py-4"
-                    : "py-4 md:py-6"
-            }`}
+            className={`fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-24 xl:px-32 transition-all duration-500 z-50 ${isScrolled
+                ? "bg-white/80 shadow-md text-gray-700 backdrop-blur-lg py-3 md:py-4"
+                : "py-4 md:py-6"
+                }`}
         >
             {/* Logo */}
             <Link to="/">
@@ -76,24 +97,30 @@ const Navbar = () => {
                     <Link
                         key={i}
                         to={link.path}
-                        className={`group flex flex-col gap-0.5 ${
-                            isScrolled ? "text-gray-700" : "text-white"
-                        }`}
+                        className={`group flex flex-col gap-0.5 ${isScrolled ? "text-gray-700" : "text-white"
+                            }`}
                     >
                         {link.name}
                         <div
-                            className={`${
-                                isScrolled ? "bg-gray-700" : "bg-white"
-                            } h-0.5 w-0 group-hover:w-full transition-all duration-300`}
+                            className={`${isScrolled ? "bg-gray-700" : "bg-white"
+                                } h-0.5 w-0 group-hover:w-full transition-all duration-300`}
                         />
                     </Link>
                 ))}
 
-                {user && (
+                {user && isAdmin && (
                     <button
-                        className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${
-                            isScrolled ? "text-black" : "text-white"
-                        } transition-all`}
+                        className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? "text-black" : "text-white"
+                            } transition-all`}
+                        onClick={() => navigate("/admin")}
+                    >
+                        Admin Panel
+                    </button>
+                )}
+                {user && !isAdmin && (
+                    <button
+                        className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? "text-black" : "text-white"
+                            } transition-all`}
                         onClick={() =>
                             isOwner
                                 ? navigate("/owner")
@@ -110,16 +137,20 @@ const Navbar = () => {
                 <img
                     src={assets.searchIcon}
                     alt="search"
-                    className={`${
-                        isScrolled && "invert"
-                    } h-7 transition-all duration-500`}
+                    className={`${isScrolled && "invert"
+                        } h-7 transition-all duration-500`}
                 />
 
                 {user ? (
                     <UserButton>
                         <UserButton.MenuItems>
                             <UserButton.Action
-                                label="My Bookings"
+                                label="Danh sách phòng yêu thích"
+                                labelIcon={<HeartIcon />}
+                                onClick={() => navigate("/favorites")}
+                            />
+                            <UserButton.Action
+                                label="Danh sách đặt phòng"
                                 labelIcon={<BookIcon />}
                                 onClick={() => navigate("/my-bookings")}
                             />
@@ -128,11 +159,10 @@ const Navbar = () => {
                 ) : (
                     <button
                         onClick={openSignIn}
-                        className={`px-8 py-2.5 rounded-full ml-4 transition-all duration-500 ${
-                            isScrolled
-                                ? "text-white bg-black"
-                                : "bg-white text-black"
-                        }`}
+                        className={`px-8 py-2.5 rounded-full ml-4 transition-all duration-500 ${isScrolled
+                            ? "text-white bg-black"
+                            : "bg-white text-black"
+                            }`}
                     >
                         Login
                     </button>
@@ -145,7 +175,12 @@ const Navbar = () => {
                     <UserButton>
                         <UserButton.MenuItems>
                             <UserButton.Action
-                                label="My Bookings"
+                                label="Danh sách phòng yêu thích"
+                                labelIcon={<HeartIcon />}
+                                onClick={() => navigate("/favorites")}
+                            />
+                            <UserButton.Action
+                                label="Lịch sử đặt phòng"
                                 labelIcon={<BookIcon />}
                                 onClick={() => navigate("/my-bookings")}
                             />
@@ -162,9 +197,8 @@ const Navbar = () => {
 
             {/* Mobile Menu */}
             <div
-                className={`fixed top-0 left-0 w-full h-screen bg-white text-base flex flex-col md:hidden items-center justify-center gap-6 font-medium text-gray-800 transition-all duration-500 ${
-                    isMenuOpen ? "translate-x-0" : "-translate-x-full"
-                }`}
+                className={`fixed top-0 left-0 w-full h-screen bg-white text-base flex flex-col md:hidden items-center justify-center gap-6 font-medium text-gray-800 transition-all duration-500 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
+                    }`}
             >
                 <button
                     className="absolute top-4 right-4"
@@ -187,7 +221,15 @@ const Navbar = () => {
                     </Link>
                 ))}
 
-                {user && (
+                {user && isAdmin && (
+                    <button
+                        className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
+                        onClick={() => navigate("/admin")}
+                    >
+                        Admin Panel
+                    </button>
+                )}
+                {user && !isAdmin && (
                     <button
                         className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
                         onClick={() =>

@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { ClerkProvider } from '@clerk/clerk-react'
+import { viVN } from './config/clerkLocalization.js'
 import { AppProvider } from './conext/AppContext.jsx'
 
 // Import your Publishable Key
@@ -13,7 +14,7 @@ if (!PUBLISHABLE_KEY) {
   throw new Error('Add your Clerk Publishable Key to the .env file')
 }
 createRoot(document.getElementById('root')).render(
-  <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+  <ClerkProvider publishableKey={PUBLISHABLE_KEY} localization={viVN}>
     <BrowserRouter>
       <AppProvider >
         <App />

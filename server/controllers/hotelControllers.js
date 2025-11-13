@@ -10,11 +10,11 @@ export const register = async (req, res) =>{
         if(hotel){
             return res.json({success: false, message:'hotel already registered'})
         }
-        await Hotel.create({name, address,contact,city,owner});
-        await User.findByIdAndUpdate(owner,{role: "hotelOwner"});
-        res.json({success:true, message: "Hotel registered Successfully"})
+        // Create hotel with pending status
+        await Hotel.create({name, address,contact,city,owner, status: "pending"});
+        res.json({success:true, message: "Đăng ký khách sạn thành công. Vui lòng chờ admin duyệt."})
     } catch (error) {
-        res.json({success:true, message: error.message})
+        res.json({success:false, message: error.message})
         
     }
 }

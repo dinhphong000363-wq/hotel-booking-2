@@ -9,6 +9,9 @@ import hotelRouter from "./routes/hotelRoutes.js";
 import connectCloudinary from "./config/cloudinary.js";
 import roomRouter from "./routes/roomsRoutes.js";
 import bookingRouter from "./routes/bookingRoutes.js";
+import favoriteRouter from "./routes/favoriteRoutes.js";
+import reviewRouter from "./routes/reviewRoutes.js";
+import adminRouter from "./routes/adminRoutes.js";
 import { stripeWebhooks } from "./controllers/stripeWebhook.js";
 
 connectDB()
@@ -38,6 +41,9 @@ app.use("/api/user", userRouter)
 app.use("/api/hotels", hotelRouter)
 app.use("/api/rooms", roomRouter)
 app.use("/api/bookings", bookingRouter)
+app.use("/api/favorites", favoriteRouter)
+app.use("/api/reviews", reviewRouter)
+app.use("/api/admin", adminRouter)
 
 
 
