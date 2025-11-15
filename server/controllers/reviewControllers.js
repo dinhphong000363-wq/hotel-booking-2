@@ -1,4 +1,7 @@
 import Review from "../models/Review.js";
+import Room from "../models/Room.js";
+import Hotel from "../models/Hotel.js";
+import Notification from "../models/Notification.js";
 
 const getAverageRating = (reviews = []) => {
   if (!reviews.length) return 0;
@@ -60,6 +63,21 @@ export const createOrUpdateReview = async (req, res) => {
         rating,
         comment: comment || "",
       });
+
+      // Create notification for hotel owner about new review
+      const room = await Room.findById(roomId).populate("hotel");
+      if (room && room.hotel) {
+        const hotel = await Hotel.findById(room.hotel._id).populate("owner");
+        if (hotel && hotel.owner) {
+          await Notification.create({
+            user: hotel.owner._id,
+            type: "review_new",
+            title: "Đánh giá mới",
+            message: `Có đánh giá mới ${rating} sao cho phòng ${room.roomType}`,
+            relatedId: roomId,
+          });
+        }
+      }
     }
 
     const reviews = await Review.find({ room: roomId })

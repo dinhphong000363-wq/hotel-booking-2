@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { assets, facilityIcons, roomCommonData } from '../assets/assets'
 import { useAppContext } from '../conext/AppContext'
+import { translateAmenity, translateRoomType } from '../utils/translations'
 import toast from 'react-hot-toast'
 
 const StaticRating = () => (
@@ -23,7 +24,7 @@ const StaticRating = () => (
 )
 const RoomsTails = () => {
     const { id } = useParams();
-    const { rooms, getToken, axios, navigate, user } = useAppContext();
+    const { rooms, getToken, axios, navigate, user, currency } = useAppContext();
     const [room, setRoom] = useState(null);
     const [mainImage, setMainImage] = useState(null);
     const [checkInDate, setCheckInDate] = useState(null);
@@ -82,7 +83,7 @@ const RoomsTails = () => {
                 toast.error(data.message);
             }
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error.message || 'Có lỗi xảy ra khi tải thông tin phòng');
         }
     };
 
@@ -273,12 +274,12 @@ const RoomsTails = () => {
                     <h1 className="text-3xl md:text-4xl font-playfair">
                         {room.hotel.name}{' '}
                         <span className="font-inter text-sm">
-                            ({room.roomType})
+                            ({translateRoomType(room.roomType)})
                         </span>
                     </h1>
 
                     <p className="text-xs font-inter py-1.5 px-3 text-white bg-orange-500 rounded-full">
-                        20% OFF
+                        Giảm 20%
                     </p>
                 </div>
 
@@ -374,7 +375,7 @@ const RoomsTails = () => {
                 <div className="flex flex-col md:flex-row md:justify-between mt-10">
                     <div className="flex flex-col">
                         <h1 className="text-3xl md:text-4xl font-playfair">
-                            Experience Luxury Like Never Before
+                            Trải nghiệm đẳng cấp chưa từng có
                         </h1>
 
                         <div className="flex flex-wrap items-center mt-3 mb-6 gap-4">
@@ -388,7 +389,7 @@ const RoomsTails = () => {
                                         alt={item}
                                         className="w-5 h-5"
                                     />
-                                    <p className="text-xs">{item}</p>
+                                    <p className="text-xs">{translateAmenity(item)}</p>
                                 </div>
                             ))}
                         </div>
@@ -397,7 +398,7 @@ const RoomsTails = () => {
 
                 {/* Room Price */}
                 <p className="text-2xl font-medium mt-6">
-                    ${room.pricePerNight} / Night
+                    {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} / đêm
                 </p>
                 {/* form */}
                 <form
@@ -410,14 +411,14 @@ const RoomsTails = () => {
                     gap-4 md:gap-10 text-gray-500">
                         <div className='flex flex-col'>
                             <label htmlFor="checkInDate" className="font-medium">
-                                Check-In
+                                Ngày nhận phòng
                             </label>
                             <input
                                 onChange={(e) => setCheckInDate(e.target.value)}
                                 min={new Date().toISOString().split('T')[0]}
                                 type="date"
                                 id="checkInDate"
-                                placeholder="Check-In"
+                                placeholder="Ngày nhận phòng"
                                 className="w-full rounded border border-gray-300 px-3 py-2 mt-1.5 outline-none"
                                 required
                             />
@@ -425,7 +426,7 @@ const RoomsTails = () => {
                         <div className='w-px h-15 bg-gray-300/70 max-md:hidden'></div>
                         <div className='flex flex-col'>
                             <label htmlFor="checkOutDate" className="font-medium">
-                                Check-Out
+                                Ngày trả phòng
                             </label>
                             <input
                                 onChange={(e) => setCheckOutDate(e.target.value)}
@@ -433,7 +434,7 @@ const RoomsTails = () => {
                                 disabled={!checkInDate}
                                 type="date"
                                 id="checkOutDate"
-                                placeholder="Check-Out"
+                                placeholder="Ngày trả phòng"
                                 className="w-full rounded border border-gray-300 px-3 py-2 mt-1.5 outline-none"
                                 required
                             />
@@ -441,13 +442,13 @@ const RoomsTails = () => {
                         <div className='w-px h-15 bg-gray-300/70 max-md:hidden'></div>
                         <div className='flex flex-col'>
                             <label htmlFor="guests" className="font-medium">
-                                Guests
+                                Số khách
                             </label>
                             <input onChange={(e) => setGuests(e.target.value)} value={guests} type="number" id='guests' placeholder='1' className='max-w-20 rounded border border-gray-300 px-3 py-2 mt-1.5 outline-none' required />
                         </div>
                     </div>
                     <button type='submit' className='bg-primary hover:bg-primary-dull active:scale-95 transition-all text-white rounded-md max-md:w-full max-md:mt-6 md:px-25 py-3 md:py-4 text-base cursor-pointer'>
-                        {isAvailable ? 'book now' : 'Check Availability'}
+                        {isAvailable ? 'Đặt ngay' : 'Kiểm tra tình trạng'}
                     </button>
                 </form>
 
@@ -616,11 +617,11 @@ const RoomsTails = () => {
                         />
                         <div>
                             <p className="text-lg md:text-xl">
-                                Hosted by {room.hotel.name}
+                                Chủ nhà: {room.hotel.name}
                             </p>
                             <div className="flex items-center mt-1">
                                 <StaticRating />
-                                <p className="ml-2">200+ reviews</p>
+                                <p className="ml-2">Hơn 200 đánh giá</p>
                             </div>
                         </div>
                     </div>
@@ -628,7 +629,7 @@ const RoomsTails = () => {
                     <button
                         className="px-4 py-2.5 mt-4 rounded text-white bg-primary hover:bg-primary-dull transition-all cursor-pointer"
                     >
-                        Contact Now
+                        Liên hệ ngay
                     </button>
                 </div>
 

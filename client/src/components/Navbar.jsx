@@ -50,17 +50,52 @@ const HeartIcon = () => {
 
 const Navbar = () => {
     const navLinks = [
-        { name: "Home", path: "/" },
-        { name: "Hotels", path: "/rooms" },
-        { name: "Experience", path: "/" },
-        { name: "About", path: "/" },
+        { name: "Trang chủ", path: "/" },
+        { name: "Khách sạn", path: "/rooms" },
+        { name: "Trải nghiệm", path: "/" },
+        { name: "Giới thiệu", path: "/" },
     ];
 
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [hotelStatus, setHotelStatus] = useState(null); // null, 'pending', 'approved', 'rejected'
+    const [loadingHotelStatus, setLoadingHotelStatus] = useState(false);
     const { openSignIn } = useClerk();
     const location = useLocation();
-    const { user, navigate, isOwner, isAdmin, setShowHotelReg } = useAppContext();
+    const { user, navigate, isOwner, isAdmin, setShowHotelReg, axios, getToken, hotelStatusUpdated } = useAppContext();
+
+    // Fetch hotel status if user is not owner or admin
+    useEffect(() => {
+        const checkHotelStatus = async () => {
+            if (!user || isOwner || isAdmin) {
+                setHotelStatus(null);
+                return;
+            }
+
+            try {
+                setLoadingHotelStatus(true);
+                const token = await getToken();
+                if (!token) return;
+
+                const { data } = await axios.get('/api/hotels/owner', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (data.success && data.hotel) {
+                    setHotelStatus(data.hotel.status); // 'pending', 'approved', 'rejected'
+                } else {
+                    setHotelStatus(null); // No hotel registered
+                }
+            } catch (error) {
+                // If 404 or no hotel, set to null
+                setHotelStatus(null);
+            } finally {
+                setLoadingHotelStatus(false);
+            }
+        };
+
+        checkHotelStatus();
+    }, [user, isOwner, isAdmin, axios, getToken, hotelStatusUpdated]);
 
     useEffect(() => {
         if (location.pathname !== "/") {
@@ -85,7 +120,7 @@ const Navbar = () => {
             {/* Logo */}
             <Link to="/">
                 <img
-                    src={assets.logo}
+                    src={assets.bookingIcon}
                     alt="logo"
                     className={`h-9 ${isScrolled && "invert opacity-80"}`}
                 />
@@ -114,21 +149,45 @@ const Navbar = () => {
                             } transition-all`}
                         onClick={() => navigate("/admin")}
                     >
-                        Admin Panel
+                        Bảng quản trị
                     </button>
                 )}
                 {user && !isAdmin && (
-                    <button
-                        className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? "text-black" : "text-white"
-                            } transition-all`}
-                        onClick={() =>
-                            isOwner
-                                ? navigate("/owner")
-                                : setShowHotelReg(true)
-                        }
-                    >
-                        {isOwner ? "Dashboard" : "List your hotel"}
-                    </button>
+                    <>
+                        {isOwner ? (
+                            <button
+                                className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? "text-black" : "text-white"
+                                    } transition-all`}
+                                onClick={() => navigate("/owner")}
+                            >
+                                Bảng điều khiển
+                            </button>
+                        ) : hotelStatus === 'pending' ? (
+                            <div className={`flex items-center gap-2 px-4 py-1 text-sm font-medium rounded-full ${isScrolled ? "bg-yellow-100 text-yellow-800 border border-yellow-300" : "bg-yellow-200/90 text-yellow-900 border border-yellow-400"
+                                } transition-all`}>
+                                <svg className="h-4 w-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <span>Đang chờ phê duyệt</span>
+                            </div>
+                        ) : hotelStatus === 'rejected' ? (
+                            <button
+                                className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? "text-black border-red-300" : "text-white border-red-400"
+                                    } transition-all hover:opacity-80`}
+                                onClick={() => setShowHotelReg(true)}
+                            >
+                                Đăng ký lại khách sạn
+                            </button>
+                        ) : (
+                            <button
+                                className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? "text-black" : "text-white"
+                                    } transition-all`}
+                                onClick={() => setShowHotelReg(true)}
+                            >
+                                Đăng ký khách sạn của bạn
+                            </button>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -164,7 +223,7 @@ const Navbar = () => {
                             : "bg-white text-black"
                             }`}
                     >
-                        Login
+                        Đăng nhập
                     </button>
                 )}
             </div>
@@ -226,20 +285,41 @@ const Navbar = () => {
                         className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
                         onClick={() => navigate("/admin")}
                     >
-                        Admin Panel
+                        Bảng quản trị
                     </button>
                 )}
                 {user && !isAdmin && (
-                    <button
-                        className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
-                        onClick={() =>
-                            isOwner
-                                ? navigate("/owner")
-                                : setShowHotelReg(true)
-                        }
-                    >
-                        {isOwner ? "Dashboard" : "List your hotel"}
-                    </button>
+                    <>
+                        {isOwner ? (
+                            <button
+                                className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
+                                onClick={() => navigate("/owner")}
+                            >
+                                Bảng điều khiển
+                            </button>
+                        ) : hotelStatus === 'pending' ? (
+                            <div className="flex items-center gap-2 px-4 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800 border border-yellow-300 transition-all">
+                                <svg className="h-4 w-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <span>Đang chờ phê duyệt</span>
+                            </div>
+                        ) : hotelStatus === 'rejected' ? (
+                            <button
+                                className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all border-red-300 text-red-700 hover:opacity-80"
+                                onClick={() => setShowHotelReg(true)}
+                            >
+                                Đăng ký lại khách sạn
+                            </button>
+                        ) : (
+                            <button
+                                className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
+                                onClick={() => setShowHotelReg(true)}
+                            >
+                                Đăng ký khách sạn của bạn
+                            </button>
+                        )}
+                    </>
                 )}
 
                 {!user && (
@@ -247,7 +327,7 @@ const Navbar = () => {
                         onClick={openSignIn}
                         className="bg-black text-white px-8 py-2.5 rounded-full transition-all duration-500"
                     >
-                        Login
+                        Đăng nhập
                     </button>
                 )}
             </div>

@@ -8,7 +8,7 @@ export const register = async (req, res) =>{
         // check if user already registered
         const hotel = await Hotel.findOne({owner})
         if(hotel){
-            return res.json({success: false, message:'hotel already registered'})
+            return res.json({success: false, message:'Khách sạn đã được đăng ký'})
         }
         // Create hotel with pending status
         await Hotel.create({name, address,contact,city,owner, status: "pending"});
@@ -18,3 +18,54 @@ export const register = async (req, res) =>{
         
     }
 }
+
+// Get hotel information for owner
+export const getOwnerHotel = async (req, res) => {
+    try {
+        const ownerId = req.user._id;
+        const hotel = await Hotel.findOne({ owner: ownerId })
+            .populate("owner", "username email image");
+        
+        if (!hotel) {
+            return res.json({ success: false, message: "Khách sạn chưa được đăng ký" });
+        }
+        
+        res.json({ success: true, hotel });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// Update hotel information
+export const updateOwnerHotel = async (req, res) => {
+    try {
+        const ownerId = req.user._id;
+        const { name, address, contact, city } = req.body;
+        
+        const hotel = await Hotel.findOne({ owner: ownerId });
+        
+        if (!hotel) {
+            return res.json({ success: false, message: "Khách sạn không tồn tại" });
+        }
+        
+        // Only allow update if hotel is approved
+        if (hotel.status !== "approved") {
+            return res.json({ 
+                success: false, 
+                message: "Chỉ có thể cập nhật thông tin khi khách sạn đã được duyệt" 
+            });
+        }
+        
+        // Update fields
+        if (name) hotel.name = name;
+        if (address) hotel.address = address;
+        if (contact) hotel.contact = contact;
+        if (city) hotel.city = city;
+        
+        await hotel.save();
+        
+        res.json({ success: true, message: "Cập nhật thông tin khách sạn thành công", hotel });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};

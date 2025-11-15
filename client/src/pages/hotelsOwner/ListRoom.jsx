@@ -4,6 +4,7 @@ import { useAppContext } from '../../conext/AppContext'
 import toast from 'react-hot-toast'
 import { assets } from '../../assets/assets'
 import ConfirmModal from '../../components/ConfirmModal'
+import { translateAmenity, translateRoomType } from '../../utils/translations'
 
 const ListRoom = () => {
     const [rooms, setRooms] = useState([])
@@ -45,7 +46,7 @@ const ListRoom = () => {
                 toast.error(data.message);
             }
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error.message || 'Có lỗi xảy ra khi tải danh sách phòng');
         }
     };
     // Chuyển đổi tình trạng phòng trống
@@ -65,7 +66,7 @@ const ListRoom = () => {
 
     // Mở modal xác nhận xóa
     const handleDeleteClick = (room) => {
-        setDeleteConfirm({ roomId: room._id, roomType: room.roomType });
+        setDeleteConfirm({ roomId: room._id, roomType: room.roomType, roomTypeLabel: translateRoomType(room.roomType) });
     }
 
     // Đóng modal xác nhận xóa
@@ -227,13 +228,13 @@ const ListRoom = () => {
                                         />
                                     </td>
                                     <td className="py-4 px-6 text-gray-800 font-medium capitalize">
-                                        {item.roomType}
+                                        {translateRoomType(item.roomType)}
                                     </td>
                                     <td className="py-4 px-6 text-gray-500 max-sm:hidden">
-                                        {item.amenities?.join(', ') || 'N/A'}
+                                        {item.amenities?.map(translateAmenity).join(', ') || 'Không có'}
                                     </td>
                                     <td className="py-4 px-6 text-gray-700 font-semibold">
-                                        {currency} {item.pricePerNight}
+                                        {currency} {Number(item.pricePerNight || 0).toLocaleString('vi-VN')}
                                     </td>
                                     <td className="py-4 px-6 text-center">
                                         {/* Toggle switch đẹp lung linh */}
@@ -277,11 +278,11 @@ const ListRoom = () => {
                 onClose={handleCloseDeleteConfirm}
                 onConfirm={handleDelete}
                 title="Xác nhận xóa phòng"
-                message={`Bạn có chắc chắn muốn xóa phòng ${deleteConfirm?.roomType || ''}? Hành động này không thể hoàn tác.`}
+                message={`Bạn có chắc chắn muốn xóa phòng ${deleteConfirm?.roomTypeLabel || ''}? Hành động này không thể hoàn tác.`}
                 confirmText="Xóa"
                 variant="danger"
                 loading={deleting}
-                highlightText={deleteConfirm?.roomType}
+                highlightText={deleteConfirm?.roomTypeLabel || deleteConfirm?.roomType}
             />
 
             {/* Modal sửa phòng */}
@@ -349,10 +350,10 @@ const ListRoom = () => {
                                         className="border border-gray-300 mt-2 rounded-lg p-3 w-full text-gray-700 focus:ring-2 focus:ring-primary outline-none transition-all"
                                     >
                                         <option value="">-- Chọn loại phòng --</option>
-                                        <option value="Single Bed">Single Bed</option>
-                                        <option value="Double Bed">Double Bed</option>
-                                        <option value="Luxury Room">Luxury Room</option>
-                                        <option value="Family Suite">Family Suite</option>
+                                        <option value="Single Bed">{translateRoomType('Single Bed')}</option>
+                                        <option value="Double Bed">{translateRoomType('Double Bed')}</option>
+                                        <option value="Luxury Room">{translateRoomType('Luxury Room')}</option>
+                                        <option value="Family Suite">{translateRoomType('Family Suite')}</option>
                                     </select>
                                 </div>
 
@@ -395,7 +396,7 @@ const ListRoom = () => {
                                                 }
                                                 className="accent-primary w-4 h-4"
                                             />
-                                            <span className="capitalize">{amenity}</span>
+                                            <span className="capitalize">{translateAmenity(amenity)}</span>
                                         </label>
                                     ))}
                                 </div>

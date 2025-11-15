@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { assets, facilityIcons, roomsDummyData } from '../assets/assets'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAppContext } from '../conext/AppContext';
+import { translateAmenity, translateRoomType } from '../utils/translations';
 const StaticRating = () => (
     <div className="flex">
         {Array(5)
@@ -19,26 +20,26 @@ const StaticRating = () => (
             ))}
     </div>
 )
-const CheckBox = ({ label, selected = false, onChange = () => { } }) => {
+const CheckBox = ({ label, value, selected = false, onChange = () => { } }) => {
     return (
         <label className="flex gap-3 items-center cursor-pointer mt-2 text-sm">
             <input
                 type="checkbox"
                 checked={selected}
-                onChange={(e) => onChange(e.target.checked, label)}
+                onChange={(e) => onChange(e.target.checked, value ?? label)}
             />
             <span className="font-light select-none">{label}</span>
         </label>
     );
 };
-const RadioButton = ({ label, selected = false, onChange = () => { } }) => {
+const RadioButton = ({ label, value, selected = false, onChange = () => { } }) => {
     return (
         <label className="flex gap-3 items-center cursor-pointer mt-2 text-sm">
             <input
                 type="radio"
                 checked={selected}
                 name='sortOption'
-                onChange={() => onChange(label)}
+                onChange={() => onChange(value ?? label)}
             />
             <span className="font-light select-none">{label}</span>
         </label>
@@ -56,22 +57,22 @@ const AllRooms = () => {
     })
     const [selectedSort, setSelectedSort] = useState('')
     const roomTypes = [
-        "Single Bed",
-        "Double Bed",
-        "Luxury Room",
-        "Family Suite",
+        { value: "Single Bed", label: "Phòng một giường" },
+        { value: "Double Bed", label: "Phòng giường đôi" },
+        { value: "Luxury Room", label: "Phòng cao cấp" },
+        { value: "Family Suite", label: "Phòng gia đình" },
     ];
     const priceRanges = [
-        '0 to 500',
-        '500 to 1000',
-        '1000 to 2000',
-        '2000 to 3000',
+        { value: '0 to 500', label: '0 - 500' },
+        { value: '500 to 1000', label: '500 - 1.000' },
+        { value: '1000 to 2000', label: '1.000 - 2.000' },
+        { value: '2000 to 3000', label: '2.000 - 3.000' },
     ];
 
     const sortOptions = [
-        "Price Low to High",
-        "Price High to Low",
-        "Newest First"
+        { value: "Price Low to High", label: "Giá tăng dần" },
+        { value: "Price High to Low", label: "Giá giảm dần" },
+        { value: "Newest First", label: "Mới nhất" }
     ];
     // Xử lý các thay đổi cho bộ lọc và sắp xếp
     const handleFilterChange = (checked, value, type) => {
@@ -189,7 +190,7 @@ const AllRooms = () => {
                             }}
                             src={room.images[0]}
                             alt="hotel-img"
-                            title="View Room Details"
+                            title="Xem chi tiết phòng"
                             className="md:w-1/2 h-72 object-cover rounded-2xl shadow-md cursor-pointer transform group-hover:scale-[1.02] transition-transform duration-500 ease-out"
                         />
 
@@ -205,10 +206,13 @@ const AllRooms = () => {
                                 >
                                     {room.hotel.name}
                                 </h2>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    {translateRoomType(room.roomType)}
+                                </p>
 
                                 <div className="flex items-center mt-1">
                                     <StaticRating />
-                                    <p className="ml-2 text-gray-500 text-sm">200+ review</p>
+                                    <p className="ml-2 text-gray-500 text-sm">Hơn 200 đánh giá</p>
                                 </div>
 
                                 <div className="flex items-center gap-2 text-gray-500 mt-3 text-sm">
@@ -225,14 +229,14 @@ const AllRooms = () => {
                                         className="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-50/70 hover:bg-indigo-100 transition-all duration-300"
                                     >
                                         <img src={facilityIcons[item]} alt={item} className="w-5 h-5" />
-                                        <p className="text-xs text-gray-700">{item}</p>
+                                        <p className="text-xs text-gray-700">{translateAmenity(item)}</p>
                                     </div>
                                 ))}
                             </div>
 
                             {/* --- giá --- */}
                             <div className="text-xl font-semibold text-indigo-600 mt-2">
-                                ${room.pricePerNight} <span className="text-sm text-gray-500 font-normal">/ night</span>
+                                {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} <span className="text-sm text-gray-500 font-normal">/ đêm</span>
                             </div>
                         </div>
                     </div>
@@ -260,12 +264,13 @@ const AllRooms = () => {
                         <div>
                             <p className="font-medium text-gray-800 pb-2">Loại phòng</p>
                             <div className="space-y-2">
-                                {roomTypes.map((room, index) => (
+                                {roomTypes.map((option, index) => (
                                     <CheckBox
                                         key={index}
-                                        label={room}
-                                        selected={selectedFilters.roomType.includes(room)}
-                                        onChange={(checked) => handleFilterChange(checked, room, 'roomType')}
+                                        label={option.label}
+                                        value={option.value}
+                                        selected={selectedFilters.roomType.includes(option.value)}
+                                        onChange={(checked) => handleFilterChange(checked, option.value, 'roomType')}
                                     />
                                 ))}
                             </div>
@@ -277,9 +282,10 @@ const AllRooms = () => {
                                 {priceRanges.map((range, index) => (
                                     <CheckBox
                                         key={index}
-                                        label={`${currency} ${range}`}
-                                        selected={selectedFilters.priceRange.includes(range)}
-                                        onChange={(checked) => handleFilterChange(checked, range, 'priceRange')}
+                                        label={`Từ ${currency}${range.label.split(' - ')[0]} đến ${currency}${range.label.split(' - ')[1]}`}
+                                        value={range.value}
+                                        selected={selectedFilters.priceRange.includes(range.value)}
+                                        onChange={(checked) => handleFilterChange(checked, range.value, 'priceRange')}
                                     />
                                 ))}
                             </div>
@@ -291,9 +297,10 @@ const AllRooms = () => {
                                 {sortOptions.map((option, index) => (
                                     <RadioButton
                                         key={index}
-                                        label={option}
-                                        selected={selectedSort === option}
-                                        onChange={() => handleSortChange(option)}
+                                        label={option.label}
+                                        value={option.value}
+                                        selected={selectedSort === option.value}
+                                        onChange={() => handleSortChange(option.value)}
                                     />
                                 ))}
                             </div>

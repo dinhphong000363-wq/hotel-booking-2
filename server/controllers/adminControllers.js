@@ -9,7 +9,7 @@ export const getPendingHotels = async (req, res) => {
     const hotels = await Hotel.find({ status: "pending" })
       .populate("owner", "username email image")
       .sort({ createdAt: -1 });
-    
+
     res.json({ success: true, hotels });
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -20,10 +20,10 @@ export const getPendingHotels = async (req, res) => {
 export const approveHotel = async (req, res) => {
   try {
     const { hotelId } = req.params;
-    
+
     const hotel = await Hotel.findById(hotelId);
     if (!hotel) {
-      return res.json({ success: false, message: "Hotel not found" });
+      return res.json({ success: false, message: "Khách sạn không tồn tại" });
     }
 
     // Update hotel status to approved
@@ -33,7 +33,7 @@ export const approveHotel = async (req, res) => {
     // Update user role to hotelOwner
     await User.findByIdAndUpdate(hotel.owner, { role: "hotelOwner" });
 
-    res.json({ success: true, message: "Hotel approved successfully" });
+    res.json({ success: true, message: "Đã duyệt khách sạn thành công" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -43,17 +43,17 @@ export const approveHotel = async (req, res) => {
 export const rejectHotel = async (req, res) => {
   try {
     const { hotelId } = req.params;
-    
+
     const hotel = await Hotel.findById(hotelId);
     if (!hotel) {
-      return res.json({ success: false, message: "Hotel not found" });
+      return res.json({ success: false, message: "Khách sạn không tồn tại" });
     }
 
     // Update hotel status to rejected
     hotel.status = "rejected";
     await hotel.save();
 
-    res.json({ success: true, message: "Hotel rejected" });
+    res.json({ success: true, message: "Đã từ chối khách sạn" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -65,7 +65,7 @@ export const getAllUsers = async (req, res) => {
     const users = await User.find({})
       .select("-recentSearchedCities")
       .sort({ createdAt: -1 });
-    
+
     res.json({ success: true, users });
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -79,7 +79,7 @@ export const updateUserRole = async (req, res) => {
     const { role } = req.body;
 
     if (!["user", "hotelOwner", "admin"].includes(role)) {
-      return res.json({ success: false, message: "Invalid role" });
+      return res.json({ success: false, message: "Vai trò không hợp lệ" });
     }
 
     const user = await User.findByIdAndUpdate(
@@ -89,10 +89,10 @@ export const updateUserRole = async (req, res) => {
     );
 
     if (!user) {
-      return res.json({ success: false, message: "User not found" });
+      return res.json({ success: false, message: "Người dùng không tồn tại" });
     }
 
-    res.json({ success: true, message: "User role updated successfully", user });
+    res.json({ success: true, message: "Đã cập nhật vai trò người dùng thành công", user });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -105,15 +105,15 @@ export const deleteUser = async (req, res) => {
 
     // Don't allow deleting yourself
     if (userId === req.user._id) {
-      return res.json({ success: false, message: "Cannot delete yourself" });
+      return res.json({ success: false, message: "Không thể xóa chính mình" });
     }
 
     const user = await User.findByIdAndDelete(userId);
     if (!user) {
-      return res.json({ success: false, message: "User not found" });
+      return res.json({ success: false, message: "Người dùng không tồn tại" });
     }
 
-    res.json({ success: true, message: "User deleted successfully" });
+    res.json({ success: true, message: "Đã xóa người dùng thành công" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -126,22 +126,86 @@ export const getAllHotels = async (req, res) => {
       .populate("owner", "username email image")
       .sort({ createdAt: -1 });
 
-    // Get first room image for each hotel
-    const hotelsWithRoomImage = await Promise.all(
+    // Get first room image, room count, booking count, and revenue for each hotel
+    const hotelsWithStats = await Promise.all(
       hotels.map(async (hotel) => {
-        const firstRoom = await Room.findOne({ hotel: hotel._id.toString() })
+        const hotelId = hotel._id.toString();
+
+        // Get first room image
+        const firstRoom = await Room.findOne({ hotel: hotelId })
           .select("images roomType")
           .limit(1);
-        
+
+        // Count total rooms
+        const totalRooms = await Room.countDocuments({ hotel: hotelId });
+
+        // Count total bookings
+        const totalBookings = await Booking.countDocuments({ hotel: hotelId });
+
+        // Calculate revenue by month (last 6 months)
+        const now = new Date();
+        const revenueByMonth = [];
+        for (let i = 5; i >= 0; i--) {
+          const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+
+          const monthBookings = await Booking.find({
+            hotel: hotelId,
+            isPaid: true,
+            createdAt: { $gte: monthStart, $lte: monthEnd }
+          });
+
+          const monthRevenue = monthBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+
+          revenueByMonth.push({
+            month: monthStart.toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' }),
+            revenue: monthRevenue,
+            bookings: monthBookings.length
+          });
+        }
+
+        // Calculate total revenue (all time)
+        const allPaidBookings = await Booking.find({ hotel: hotelId, isPaid: true });
+        const totalRevenue = allPaidBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+
         return {
           ...hotel.toObject(),
           roomImage: firstRoom?.images?.[0] || null,
           roomType: firstRoom?.roomType || null,
+          totalRooms,
+          totalBookings,
+          totalRevenue,
+          revenueByMonth,
         };
       })
     );
 
-    res.json({ success: true, hotels: hotelsWithRoomImage });
+    res.json({ success: true, hotels: hotelsWithStats });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Delete hotel
+export const deleteHotel = async (req, res) => {
+  try {
+    const { hotelId } = req.params;
+
+    const hotel = await Hotel.findById(hotelId);
+    if (!hotel) {
+      return res.json({ success: false, message: "Khách sạn không tồn tại" });
+    }
+
+    // Delete all rooms associated with this hotel
+    await Room.deleteMany({ hotel: hotelId });
+
+    // Delete all bookings associated with this hotel
+    await Booking.deleteMany({ hotel: hotelId });
+
+    // Delete the hotel
+    await Hotel.findByIdAndDelete(hotelId);
+
+    res.json({ success: true, message: "Đã xóa khách sạn thành công" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -166,14 +230,14 @@ export const getDashboardStats = async (req, res) => {
     for (let i = 5; i >= 0; i--) {
       const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
-      
+
       const monthBookings = await Booking.find({
         isPaid: true,
         createdAt: { $gte: monthStart, $lte: monthEnd }
       });
-      
+
       const monthRevenue = monthBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
-      
+
       revenueByMonth.push({
         month: monthStart.toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' }),
         revenue: monthRevenue
@@ -198,7 +262,7 @@ export const getDashboardStats = async (req, res) => {
     const currentMonthRevenue = currentMonthBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
     const previousMonthRevenue = previousMonthBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
 
-    const revenueGrowth = previousMonthRevenue > 0 
+    const revenueGrowth = previousMonthRevenue > 0
       ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue * 100).toFixed(1)
       : currentMonthRevenue > 0 ? 100 : 0;
 

@@ -12,6 +12,7 @@ import bookingRouter from "./routes/bookingRoutes.js";
 import favoriteRouter from "./routes/favoriteRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
+import ownerRouter from "./routes/ownerRoutes.js";
 import { stripeWebhooks } from "./controllers/stripeWebhook.js";
 
 connectDB()
@@ -44,6 +45,7 @@ app.use("/api/bookings", bookingRouter)
 app.use("/api/favorites", favoriteRouter)
 app.use("/api/reviews", reviewRouter)
 app.use("/api/admin", adminRouter)
+app.use("/api/owner", ownerRouter)
 
 
 

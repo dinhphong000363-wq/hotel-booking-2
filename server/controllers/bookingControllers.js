@@ -2,6 +2,7 @@ import transporter from "../config/nodemailer.js";
 import Booking from "../models/Booking.js";
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
+import Notification from "../models/Notification.js";
 import stripe from "stripe"
 
 // Chức năng kiểm tra tình trạng phòng trống
@@ -50,7 +51,7 @@ export const createBooking = async (req, res) => {
             room,
         });
         if (!isAvailable) {
-            return res.json({ success: false, message: "Room is not available" });
+            return res.json({ success: false, message: "Phòng không có sẵn" });
         }
 
         // Lấy totalPrice từ Room
@@ -108,12 +109,24 @@ export const createBooking = async (req, res) => {
             mailOption
         )
 
-        res.json({ success: true, message: "Booking create successfully" })
+        // Create notification for hotel owner
+        const hotel = await Hotel.findById(roomData.hotel._id).populate("owner");
+        if (hotel && hotel.owner) {
+            await Notification.create({
+                user: hotel.owner._id,
+                type: "booking_new",
+                title: "Đặt phòng mới",
+                message: `Có đặt phòng mới từ ${req.user.username} cho phòng ${roomData.roomType}`,
+                relatedId: booking._id.toString(),
+            });
+        }
+
+        res.json({ success: true, message: "Đã tạo đặt phòng thành công" })
 
 
     } catch (error) {
         console.log(error)
-        res.json({ success: false, message: "faild to create successfully" })
+        res.json({ success: false, message: "Không thể tạo đặt phòng" })
 
     }
 };
@@ -129,7 +142,7 @@ export const getUserBookings = async (req, res) => {
 
         res.json({ success: true, bookings });
     } catch (error) {
-        res.json({ success: false, message: "Failed to fetch bookings" });
+        res.json({ success: false, message: "Không thể tải danh sách đặt phòng" });
     }
 };
 // Owner: list bookings of hotels the owner owns with filters
@@ -142,7 +155,7 @@ export const getHotelBookings = async (req, res) => {
         const hotels = await Hotel.find({ owner: ownerId });
 
         if (!hotels || hotels.length === 0) {
-            return res.json({ success: false, message: "No Hotel found" });
+            return res.json({ success: false, message: "Không tìm thấy khách sạn" });
         }
 
         const hotelIds = hotels.map(h => h._id.toString());
@@ -175,7 +188,7 @@ export const getHotelBookings = async (req, res) => {
     } catch (error) {
         res.json({
             success: false,
-            message: "Failed to fetch bookings"
+            message: "Không thể tải danh sách đặt phòng"
         });
     }
 };
@@ -188,28 +201,46 @@ export const updateBookingStatus = async (req, res) => {
         const { status } = req.body; // expected: confirmed | cancelled | completed
 
         if (!["confirmed", "cancelled", "completed"].includes(status)) {
-            return res.json({ success: false, message: "Invalid status" });
+            return res.json({ success: false, message: "Trạng thái không hợp lệ" });
         }
 
         const booking = await Booking.findById(id);
         if (!booking) {
-            return res.json({ success: false, message: "Booking not found" });
+            return res.json({ success: false, message: "Đặt phòng không tồn tại" });
         }
 
         const hotel = await Hotel.findById(booking.hotel);
         if (!hotel || hotel.owner.toString() !== ownerId.toString()) {
-            return res.json({ success: false, message: "Access denied" });
+            return res.json({ success: false, message: "Không có quyền truy cập" });
         }
 
         // Business rules: cannot confirm/cancel after completed
         if (booking.status === "completed") {
-            return res.json({ success: false, message: "Booking already completed" });
+            return res.json({ success: false, message: "Đặt phòng đã hoàn thành" });
         }
 
         booking.status = status;
         await booking.save();
 
-        res.json({ success: true, message: "Status updated", booking });
+        // Create notification for user about status change
+        const bookingWithUser = await Booking.findById(id).populate("user");
+        if (bookingWithUser && bookingWithUser.user) {
+            const statusMessages = {
+                confirmed: "Đặt phòng của bạn đã được xác nhận",
+                cancelled: "Đặt phòng của bạn đã bị hủy",
+                completed: "Đặt phòng của bạn đã hoàn thành",
+            };
+
+            await Notification.create({
+                user: bookingWithUser.user._id,
+                type: `booking_${status}`,
+                title: "Cập nhật trạng thái đặt phòng",
+                message: statusMessages[status] || "Trạng thái đặt phòng đã được cập nhật",
+                relatedId: booking._id.toString(),
+            });
+        }
+
+        res.json({ success: true, message: "Đã cập nhật trạng thái", booking });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

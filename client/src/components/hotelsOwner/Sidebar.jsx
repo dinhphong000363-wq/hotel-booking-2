@@ -5,10 +5,11 @@ import { UserButton } from '@clerk/clerk-react'
 
 const Sidebar = () => {
     const sidebarLinks = [
-        { name: 'Dashboard', path: '/owner', icon: assets.dashboardIcon },
-        { name: 'Add Room', path: '/owner/add-room', icon: assets.addIcon },
-        { name: 'List Room', path: '/owner/list-room', icon: assets.listIcon },
-        { name: 'Bookings', path: '/owner/bookings', icon: assets.listIcon },
+        { name: 'Bảng điều khiển', path: '/owner', icon: assets.dashboardIcon },
+        { name: 'Thông tin khách sạn', path: '/owner/hotel-info', icon: assets.homeIcon },
+        { name: 'Thêm phòng', path: '/owner/add-room', icon: assets.addIcon },
+        { name: 'Danh sách phòng', path: '/owner/list-room', icon: assets.listIcon },
+        { name: 'Đơn đặt phòng', path: '/owner/bookings', icon: assets.listIcon },
     ]
     return (
         <div className='md:w-64 w-16 border-r h-full text-base border-gray-300 pt-4 flex flex-col transition-all duration-300'>

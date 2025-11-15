@@ -5,8 +5,8 @@ const Testimonial = () => {
     return (
         <div className="flex flex-col items-center px-6 md:px-16 lg:px-24 bg-slate-50 pt-20 pb-30">
             <Title
-                title="What Our Guests Say"
-                subTitle="Discover why discerning travelers consistently choose QuickStay for their exclusive and luxurious accommodations around the world."
+                title="Khách hàng nói gì"
+                subTitle="Khám phá lý do du khách sành điệu luôn chọn QuickStay cho những kỳ nghỉ sang trọng và độc đáo khắp thế giới."
             />
 
             <div className="flex md:flex-row flex-col gap-5 mt-10">
@@ -18,7 +18,7 @@ const Testimonial = () => {
                         alt="userImage1"
                     />
                     <h2 className="text-lg text-gray-900 font-medium mt-2">Donald Jackman</h2>
-                    <p className="text-sm text-gray-500">Graphic Designer</p>
+                    <p className="text-sm text-gray-500">Nhà thiết kế đồ họa</p>
 
                     {/* Stars */}
                     <div className="flex items-center justify-center mt-3 gap-1 text-orange-500">
@@ -30,7 +30,7 @@ const Testimonial = () => {
                     </div>
 
                     <p className="text-center text-[15px] mt-3 text-gray-500">
-                        I've been using imagify for nearly two years, primarily for Instagram, and it has been incredibly user-friendly, making my work much easier.
+                        Tôi đã sử dụng QuickStay gần hai năm, chủ yếu cho các chuyến công tác. Trải nghiệm rất thân thiện và giúp công việc của tôi nhẹ nhàng hơn nhiều.
                     </p>
                 </div>
 
@@ -42,7 +42,7 @@ const Testimonial = () => {
                         alt="userImage2"
                     />
                     <h2 className="text-lg text-gray-900 font-medium mt-2">Richard Nelson</h2>
-                    <p className="text-sm text-gray-500">Content Creator</p>
+                    <p className="text-sm text-gray-500">Người sáng tạo nội dung</p>
 
                     <div className="flex items-center justify-center mt-3 gap-1 text-orange-500">
                         {Array(5).fill(0).map((_, i) => (
@@ -53,7 +53,7 @@ const Testimonial = () => {
                     </div>
 
                     <p className="text-center text-[15px] mt-3 text-gray-500">
-                        I've been using imagify for nearly two years, primarily for Instagram, and it has been incredibly user-friendly, making my work much easier.
+                        Tôi rất ấn tượng với dịch vụ. Quy trình đặt phòng mượt mà và đội ngũ hỗ trợ cực kỳ tận tâm.
                     </p>
                 </div>
 
@@ -65,7 +65,7 @@ const Testimonial = () => {
                         alt="userImage3"
                     />
                     <h2 className="text-lg text-gray-900 font-medium mt-2">James Washington</h2>
-                    <p className="text-sm text-gray-500">Co-founder</p>
+                    <p className="text-sm text-gray-500">Đồng sáng lập</p>
 
                     <div className="flex items-center justify-center mt-3 gap-1 text-orange-500">
                         {Array(5).fill(0).map((_, i) => (
@@ -76,7 +76,7 @@ const Testimonial = () => {
                     </div>
 
                     <p className="text-center text-[15px] mt-3 text-gray-500">
-                        I've been using imagify for nearly two years, primarily for Instagram, and it has been incredibly user-friendly, making my work much easier.
+                        QuickStay giúp tôi dễ dàng tìm được chỗ ở phù hợp cho gia đình. Dịch vụ tuyệt vời và rất đáng tin cậy.
                     </p>
                 </div>
             </div>

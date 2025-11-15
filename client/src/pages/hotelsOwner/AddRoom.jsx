@@ -3,6 +3,7 @@ import Title from '../../components/Title'
 import { assets } from '../../assets/assets'
 import { useAppContext } from '../../conext/AppContext'
 import toast from 'react-hot-toast'
+import { translateAmenity, translateRoomType } from '../../utils/translations'
 
 const AddRoom = () => {
     const { axios, getToken, fetchRooms } = useAppContext();
@@ -36,7 +37,7 @@ const AddRoom = () => {
             !inputs.pricePerNight ||
             !Object.values(images).some((image) => image)
         ) {
-            toast.error('Please fill in all the details');
+            toast.error('Vui lòng điền đầy đủ thông tin');
             return;
         }
 
@@ -70,11 +71,11 @@ const AddRoom = () => {
                     roomType: '',
                     pricePerNight: '',
                     amenities: {
-                        'WiFi miễn phí': false,
-                        'Bữa sáng miễn phí': false,
-                        'Dịch vụ phòng': false,
-                        'Tầm nhìn ra núi': false,
-                        'Lối vào hồ bơi': false,
+                        'Free WiFi': false,
+                        'Free Breakfast': false,
+                        'Room Service': false,
+                        'Mountain View': false,
+                        'Pool Access': false,
                     },
                 });
                 setImages({ 1: null, 2: null, 3: null, 4: null });
@@ -83,7 +84,7 @@ const AddRoom = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error(error.message || 'Something went wrong');
+            toast.error(error.message || 'Có lỗi xảy ra');
         } finally {
             setLoading(false);
         }
@@ -150,10 +151,10 @@ const AddRoom = () => {
                         className="border border-gray-300 mt-2 rounded-lg p-3 w-full text-gray-700 focus:ring-2 focus:ring-primary outline-none transition-all"
                     >
                         <option value="">-- Chọn loại phòng --</option>
-                        <option value="Single Bed">Single Bed</option>
-                        <option value="Double Bed">Double Bed</option>
-                        <option value="Luxury Room">Luxury Room</option>
-                        <option value="Family Suite">Family Suite</option>
+                        <option value="Single Bed">{translateRoomType('Single Bed')}</option>
+                        <option value="Double Bed">{translateRoomType('Double Bed')}</option>
+                        <option value="Luxury Room">{translateRoomType('Luxury Room')}</option>
+                        <option value="Family Suite">{translateRoomType('Family Suite')}</option>
                     </select>
                 </div>
 
@@ -196,7 +197,7 @@ const AddRoom = () => {
                                 }
                                 className="accent-primary w-4 h-4"
                             />
-                            <span className="capitalize">{amenity}</span>
+                            <span className="capitalize">{translateAmenity(amenity)}</span>
                         </label>
                     ))}
                 </div>

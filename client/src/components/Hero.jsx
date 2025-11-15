@@ -1,10 +1,37 @@
 import React, { useState } from "react";
-import { assets, cities } from "../assets/assets";
+import { assets, cities, heroSliderImages } from "../assets/assets";
 import { useAppContext } from "../conext/AppContext";
 
 const Hero = () => {
   const { navigate, getToken, axios, setSearchedCities } = useAppContext();
   const [destination, setDestination] = useState("");
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const totalSlides = heroSliderImages.length;
+
+  const goToSlide = (index) => {
+    if (totalSlides === 0) return;
+    const nextIndex = (index + totalSlides) % totalSlides;
+    setCurrentSlide(nextIndex);
+  };
+
+  const goToNext = () => {
+    goToSlide(currentSlide + 1);
+  };
+
+  const goToPrev = () => {
+    goToSlide(currentSlide - 1);
+  };
+
+  React.useEffect(() => {
+    if (totalSlides === 0) return undefined;
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [totalSlides]);
 
   const onSearch = async (e) => {
     e.preventDefault();
@@ -25,11 +52,44 @@ const Hero = () => {
 
   return (
     <div
-      className='relative flex flex-col items-start justify-center px-6 md:px-16 lg:px-24 xl:px-32 
-      text-white bg-[url("/src/assets/heroImage.png")] bg-no-repeat bg-cover bg-center h-screen'
+      className='relative flex flex-col items-start justify-center px-6 md:px-16 lg:px-24 xl:px-32 text-white h-screen'
+      style={{
+        backgroundImage:
+          totalSlides > 0 ? `url(${heroSliderImages[currentSlide]})` : `url(${assets.heroImage || ""})`,
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        transition: "background-image 0.8s ease-in-out",
+      }}
     >
       {/* Overlay để tăng tương phản */}
       <div className='absolute inset-0 bg-black/40'></div>
+
+      {/* Slider Controls */}
+      {totalSlides > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={goToPrev}
+            className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/40 text-white rounded-full p-2 transition-all"
+            aria-label="Ảnh trước"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 19.5 8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={goToNext}
+            className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/40 text-white rounded-full p-2 transition-all"
+            aria-label="Ảnh tiếp theo"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </>
+      )}
 
       <div className='relative z-10 max-w-2xl'>
         <p className='bg-[#49B9FF]/60 px-4 py-1 rounded-full inline-block text-sm'>
@@ -49,14 +109,13 @@ const Hero = () => {
       {/* Form tìm kiếm */}
       <form
         onSubmit={onSearch}
-        className='relative z-10 bg-white text-gray-700 rounded-2xl shadow-lg px-6 py-4 
-        mt-10 flex flex-col md:flex-row items-center gap-4 w-full max-w-4xl'
+        className='relative z-10 bg-white text-gray-700 rounded-2xl shadow-lg px-6 py-4 mt-10 flex flex-col md:flex-row items-center gap-4 w-full max-w-4xl'
       >
         {/* Destination */}
         <div className='flex flex-col flex-1 min-w-[150px]'>
           <label htmlFor='destinationInput' className='text-sm font-medium mb-1 flex items-center gap-2'>
-            <img src={assets.mapIcon} alt='' className='h-4' />
-            Destination
+            <img src={assets.locationIcon} alt='' className='h-4' />
+            Điểm đến
           </label>
           <input
             onChange={(e) => setDestination(e.target.value)}
@@ -65,7 +124,7 @@ const Hero = () => {
             id='destinationInput'
             type='text'
             className='border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-black/30'
-            placeholder='Type here'
+            placeholder='Nhập điểm đến'
             required
           />
         </div>
@@ -79,7 +138,7 @@ const Hero = () => {
         <div className='flex flex-col'>
           <label htmlFor='checkIn' className='text-sm font-medium mb-1 flex items-center gap-2'>
             <img src={assets.calenderIcon} alt='' className='h-4' />
-            Check-in
+            Nhận phòng
           </label>
           <input
             id='checkIn'
@@ -92,7 +151,7 @@ const Hero = () => {
         <div className='flex flex-col'>
           <label htmlFor='checkOut' className='text-sm font-medium mb-1 flex items-center gap-2'>
             <img src={assets.calenderIcon} alt='' className='h-4' />
-            Check-out
+            Trả phòng
           </label>
           <input
             id='checkOut'
@@ -104,7 +163,7 @@ const Hero = () => {
         {/* Guests */}
         <div className='flex flex-col'>
           <label htmlFor='guests' className='text-sm font-medium mb-1'>
-            Guests
+            Số khách
           </label>
           <input
             min={1}

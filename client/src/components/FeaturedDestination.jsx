@@ -12,7 +12,7 @@ const FeaturedDestination = () => {
     <section className="flex flex-col items-center px-6 md:px-16 lg:px-24 bg-gradient-to-b from-white to-slate-50 py-24">
       {/* Section Title */}
       <Title
-        title="Điểm đến nổi bật"
+        title="Nơi đến được ưa chuộng"
         subTitle="Khám phá bộ sưu tập bất động sản đặc biệt được tuyển chọn kỹ lưỡng trên khắp thế giới — 
         nơi mang đến sự sang trọng vô song và những trải nghiệm khó quên."
       />

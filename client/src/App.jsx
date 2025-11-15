@@ -11,6 +11,7 @@ import Dashboard from './pages/hotelsOwner/Dashboard'
 import AddRoom from './pages/hotelsOwner/AddRoom'
 import ListRoom from './pages/hotelsOwner/ListRoom'
 import OwnerBookings from './pages/hotelsOwner/OwnerBookings'
+import HotelInfo from './pages/hotelsOwner/HotelInfo'
 import AdminLayout from './pages/admin/Layout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import HotelApproval from './pages/admin/HotelApproval'
@@ -41,6 +42,7 @@ const App = () => {
           <Route path='/loader/:nextUrl' element={<Loader />} />
           <Route path='/owner' element={<Layout />}>
             <Route index element={<Dashboard />} />
+            <Route path='hotel-info' element={<HotelInfo />} />
             <Route path='add-room' element={<AddRoom />} />
             <Route path='list-room' element={<ListRoom />} />
             <Route path='bookings' element={<OwnerBookings />} />

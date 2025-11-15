@@ -4,8 +4,8 @@ import { assets } from '../../assets/assets'
 
 const Sidebar = () => {
     const sidebarLinks = [
-        { name: '📊 Thống kê', path: '/admin/dashboard', icon: assets.dashboardIcon },
-        { name: 'Duyệt Khách Sạn', path: '/admin', icon: assets.dashboardIcon },
+        { name: 'Thống kê', path: '/admin/dashboard', icon: assets.dashboardIcon },
+        { name: 'Duyệt Khách Sạn', path: '/admin', icon: assets.hotelReview },
         { name: 'Quản Lý Khách Sạn', path: '/admin/hotels', icon: assets.homeIcon },
         { name: 'Quản Lý Người Dùng', path: '/admin/users', icon: assets.groupIcon },
     ]

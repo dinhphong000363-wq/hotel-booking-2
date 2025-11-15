@@ -8,8 +8,8 @@ const ExclusiveOffers = () => {
             <div className="flex flex-col md:flex-row items-center justify-between w-full">
                 <Title
                     align='left'
-                    title='Exclusive Offers'
-                    subTitle='Take advantage of our limited-time offers and special packages to enhance your stay and create unforgettable memories.'
+                    title='Ưu đãi độc quyền'
+                    subTitle='Đừng bỏ lỡ các gói ưu đãi có thời hạn để nâng tầm kỳ nghỉ và tạo nên những kỷ niệm khó quên.'
                 />
                 <button
                     className="
@@ -18,7 +18,7 @@ const ExclusiveOffers = () => {
                     max-md:mt-12
                 "
                 >
-                    View All Offers
+                    Xem tất cả ưu đãi
                     <img
                         src={assets.arrowIcon}
                         alt="arrow-icon"
@@ -36,7 +36,7 @@ const ExclusiveOffers = () => {
                         style={{ backgroundImage: `url(${item.image})` }}
                     >
                         <p className='px-3 py-1 absolute top-4 left-4 text-xs bg-white text-gray-800 font-medium rounded-full'>
-                            {item.priceOff}% OFF
+                            Giảm {item.priceOff}%
                         </p>
 
                         <div>
@@ -47,12 +47,12 @@ const ExclusiveOffers = () => {
                             <p>{item.description}</p>
 
                             <p className='text-xs text-white/70 mt-3'>
-                                Expires {item.expiryDate}
+                                Hết hạn {item.expiryDate}
                             </p>
                         </div>
 
                         <button className='flex items-center gap-2 font-medium cursor-pointer mt-4 mb-5'>
-                            View Offers
+                            Xem ưu đãi
                             <img
                                 className='invert group-hover:translate-x-1 transition-all'
                                 src={assets.arrowIcon}

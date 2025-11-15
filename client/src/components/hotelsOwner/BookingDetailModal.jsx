@@ -1,4 +1,5 @@
 import React from 'react'
+import { translateBookingStatus, translatePaymentMethod, translatePaymentStatus, translateRoomType } from '../../utils/translations'
 
 const BookingDetailModal = ({ booking, onClose }) => {
   if (!booking) return null
@@ -17,13 +18,13 @@ const BookingDetailModal = ({ booking, onClose }) => {
           <div><span className='text-gray-500'>Mã:</span> {_id}</div>
           <div><span className='text-gray-500'>Khách hàng:</span> {user?.username} ({user?.email})</div>
           <div><span className='text-gray-500'>Khách sạn:</span> {hotel?.name}</div>
-          <div><span className='text-gray-500'>Phòng:</span> {room?.roomType}</div>
+          <div><span className='text-gray-500'>Phòng:</span> {translateRoomType(room?.roomType)}</div>
           <div><span className='text-gray-500'>Số khách:</span> {guests}</div>
-          <div><span className='text-gray-500'>Nhận phòng:</span> {new Date(checkInDate).toLocaleString()}</div>
-          <div><span className='text-gray-500'>Trả phòng:</span> {new Date(checkOutDate).toLocaleString()}</div>
+          <div><span className='text-gray-500'>Nhận phòng:</span> {new Date(checkInDate).toLocaleString('vi-VN')}</div>
+          <div><span className='text-gray-500'>Trả phòng:</span> {new Date(checkOutDate).toLocaleString('vi-VN')}</div>
           <div><span className='text-gray-500'>Tổng tiền:</span> {totalPrice}</div>
-          <div><span className='text-gray-500'>Thanh toán:</span> {isPaid ? 'paid' : 'unpaid'}{paymentMethod ? ` (${paymentMethod})` : ''}</div>
-          <div><span className='text-gray-500'>Trạng thái:</span> {status}</div>
+          <div><span className='text-gray-500'>Thanh toán:</span> {translatePaymentStatus(isPaid)}{paymentMethod ? ` (${translatePaymentMethod(paymentMethod)})` : ''}</div>
+          <div><span className='text-gray-500'>Trạng thái:</span> {translateBookingStatus(status)}</div>
         </div>
         <div className='p-4 border-t flex justify-end'>
           <button onClick={onClose} className='px-4 py-2 border rounded'>Đóng</button>

@@ -9,7 +9,7 @@ const Footer = () => {
                 {/* Logo + Intro */}
                 <div className="max-w-80">
                     <img
-                        src={assets.logo || '/src/assets/logo.png'}
+                        src={assets.bookingIcon || '/src/assets/logo.png'}
                         alt="logo"
                         className="mb-4 h-9 object-contain"
                     />
@@ -86,7 +86,7 @@ const Footer = () => {
             {/* Bottom line */}
             <hr className="border-gray-200 mt-12" />
             <div className="flex flex-col md:flex-row gap-3 items-center justify-between py-6 text-sm">
-                <p>© {new Date().getFullYear()} <a href="#" className="hover:text-black">Stayy</a>. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} <a href="#" className="hover:text-black">Stayy</a>. Bảo lưu mọi quyền.</p>
                 <ul className="flex items-center gap-4">
                     <li><a href="#" className="hover:text-black transition">Chính sách bảo mật</a></li>
                     <li><a href="#" className="hover:text-black transition">Điều khoản</a></li>

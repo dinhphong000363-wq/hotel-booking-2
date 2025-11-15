@@ -4,9 +4,10 @@ import { assets } from '../assets/assets';
 import { useAppContext } from '../conext/AppContext';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
+import { translateRoomType, translatePaymentStatus, translatePaymentMethod, translateBookingStatus } from '../utils/translations';
 
 const MyBookings = () => {
-    const { axios, getToken, user } = useAppContext();
+    const { axios, getToken, user, currency } = useAppContext();
     const [booking, setBookings] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState(null); // { bookingId, hotelName }
     const [deleting, setDeleting] = useState(false);
@@ -25,7 +26,7 @@ const MyBookings = () => {
                 toast.error(data.message);
             }
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error.message || 'Có lỗi xảy ra khi tải danh sách đặt phòng');
         }
     };
     const handlePayment = async (bookingId) => {
@@ -38,8 +39,7 @@ const MyBookings = () => {
                 toast.error(data.message)
             }
         } catch (error) {
-            toast.error(error.message)
-
+            toast.error(error.message || 'Có lỗi xảy ra khi xử lý thanh toán')
         }
     }
 
@@ -47,7 +47,7 @@ const MyBookings = () => {
     const handleDeleteClick = (booking) => {
         setDeleteConfirm({
             bookingId: booking._id,
-            hotelName: booking.hotel?.name || 'Unknown Hotel'
+            hotelName: booking.hotel?.name || 'Khách sạn chưa xác định'
         });
     }
 
@@ -119,9 +119,9 @@ const MyBookings = () => {
 
                             <div className="flex flex-col gap-1.5 mt-3 md:mt-0 md:ml-4">
                                 <p className="font-playfair text-2xl">
-                                    {booking.hotel?.name || 'Unknown Hotel'}
+                                    {booking.hotel?.name || 'Khách sạn chưa xác định'}
                                     <span className="font-inter text-sm text-gray-600">
-                                        ({booking.room?.roomType || 'Unknown Type'})
+                                        ({translateRoomType(booking.room?.roomType) || 'Loại phòng chưa rõ'})
                                     </span>
                                 </p>
 
@@ -131,7 +131,7 @@ const MyBookings = () => {
                                         alt="location-icon"
                                         className="w-4 h-4"
                                     />
-                                    <span>{booking.hotel?.address || 'No address'}</span>
+                                    <span>{booking.hotel?.address || 'Chưa có địa chỉ'}</span>
                                 </div>
 
                                 <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -140,29 +140,29 @@ const MyBookings = () => {
                                         alt="guests-icon"
                                         className="w-4 h-4"
                                     />
-                                    <span>Guests: {booking.guests || 0}</span>
+                                    <span>Số khách: {booking.guests || 0}</span>
                                 </div>
 
-                                <p className="text-base">Total: ${booking.totalPrice || 0}</p>
+                                <p className="text-base">Tổng cộng: {currency}{Number(booking.totalPrice || 0).toLocaleString('vi-VN')}</p>
                             </div>
                         </div>
 
                         {/* date */}
                         <div className="flex flex-row items-start md:items-center gap-8 md:gap-12 mt-3">
                             <div>
-                                <p className="font-medium">Check-In:</p>
+                                <p className="font-medium">Ngày nhận phòng:</p>
                                 <p className="text-gray-500 text-sm">
                                     {booking.checkInDate
-                                        ? new Date(booking.checkInDate).toDateString()
-                                        : 'N/A'}
+                                        ? new Date(booking.checkInDate).toLocaleDateString('vi-VN')
+                                        : 'Không có dữ liệu'}
                                 </p>
                             </div>
                             <div>
-                                <p className="font-medium">Check-Out:</p>
+                                <p className="font-medium">Ngày trả phòng:</p>
                                 <p className="text-gray-500 text-sm">
                                     {booking.checkOutDate
-                                        ? new Date(booking.checkOutDate).toDateString()
-                                        : 'N/A'}
+                                        ? new Date(booking.checkOutDate).toLocaleDateString('vi-VN')
+                                        : 'Không có dữ liệu'}
                                 </p>
                             </div>
                         </div>
@@ -178,12 +178,12 @@ const MyBookings = () => {
                                     className={`text-sm ${booking.isPaid ? 'text-green-500' : 'text-red-500'
                                         }`}
                                 >
-                                    {booking.isPaid ? 'Paid' : 'Unpaid'}
+                                    {translatePaymentStatus(booking.isPaid)}
                                 </p>
                             </div>
                             {!booking.isPaid && (
                                 <button onClick={() => handlePayment(booking._id)} className="px-4 py-1.5 text-xs border border-gray-400 rounded-full hover:bg-gray-50 transition-all cursor-pointer">
-                                    Pay Now
+                                    Thanh toán ngay
                                 </button>
                             )}
                             <button
@@ -192,6 +192,12 @@ const MyBookings = () => {
                             >
                                 Xóa đơn
                             </button>
+                            <p className="text-xs text-gray-500">
+                                Phương thức: {translatePaymentMethod(booking.paymentMethod) || 'Chưa xác định'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                                Trạng thái: {translateBookingStatus(booking.status)}
+                            </p>
                         </div>
                     </div>
                 ))}

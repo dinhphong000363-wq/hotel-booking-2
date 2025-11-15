@@ -9,12 +9,12 @@ export const createRoom = async (req, res) => {
     // ✅ Tìm khách sạn theo chủ sở hữu
     const hotel = await Hotel.findOne({ owner: req.auth.userId });
     if (!hotel) {
-      return res.json({ success: false, message: "No Hotel found" });
+      return res.json({ success: false, message: "Không tìm thấy khách sạn" });
     }
 
     // ✅ Kiểm tra file upload có tồn tại không
     if (!req.files || req.files.length === 0) {
-      return res.json({ success: false, message: "No images uploaded" });
+      return res.json({ success: false, message: "Vui lòng tải lên ít nhất một ảnh" });
     }
 
     // ✅ Tải ảnh lên Cloudinary
@@ -35,7 +35,7 @@ export const createRoom = async (req, res) => {
       images,
     });
 
-    res.json({ success: true, message: "Room created successfully" });
+    res.json({ success: true, message: "Đã tạo phòng thành công" });
 
   } catch (error) {
     console.error("❌ Error creating room:", error.message);
@@ -83,7 +83,7 @@ export const toggleRoomAvailability = async (req, res) => {
 
     await roomData.save();
 
-    res.json({ success: true, message: "Room availability updated" });
+    res.json({ success: true, message: "Đã cập nhật tình trạng phòng" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -99,17 +99,17 @@ export const updateRoom = async (req, res) => {
     // Tìm khách sạn theo chủ sở hữu
     const hotel = await Hotel.findOne({ owner: req.auth.userId });
     if (!hotel) {
-      return res.json({ success: false, message: "No Hotel found" });
+      return res.json({ success: false, message: "Không tìm thấy khách sạn" });
     }
 
     // Tìm phòng và kiểm tra xem nó có thuộc về hotel này không
     const room = await Room.findById(id);
     if (!room) {
-      return res.json({ success: false, message: "Room not found" });
+      return res.json({ success: false, message: "Phòng không tồn tại" });
     }
 
     if (room.hotel.toString() !== hotel._id.toString()) {
-      return res.json({ success: false, message: "Unauthorized to update this room" });
+      return res.json({ success: false, message: "Không có quyền cập nhật phòng này" });
     }
 
     // Cập nhật thông tin phòng
@@ -129,7 +129,7 @@ export const updateRoom = async (req, res) => {
 
     await room.save();
 
-    res.json({ success: true, message: "Room updated successfully" });
+    res.json({ success: true, message: "Đã cập nhật phòng thành công" });
   } catch (error) {
     console.error("❌ Error updating room:", error.message);
     res.json({ success: false, message: error.message });
@@ -145,23 +145,23 @@ export const deleteRoom = async (req, res) => {
     // Tìm khách sạn theo chủ sở hữu
     const hotel = await Hotel.findOne({ owner: req.auth.userId });
     if (!hotel) {
-      return res.json({ success: false, message: "No Hotel found" });
+      return res.json({ success: false, message: "Không tìm thấy khách sạn" });
     }
 
     // Tìm phòng và kiểm tra xem nó có thuộc về hotel này không
     const room = await Room.findById(id);
     if (!room) {
-      return res.json({ success: false, message: "Room not found" });
+      return res.json({ success: false, message: "Phòng không tồn tại" });
     }
 
     if (room.hotel.toString() !== hotel._id.toString()) {
-      return res.json({ success: false, message: "Unauthorized to delete this room" });
+      return res.json({ success: false, message: "Không có quyền xóa phòng này" });
     }
 
     // Xóa phòng
     await Room.findByIdAndDelete(id);
 
-    res.json({ success: true, message: "Room deleted successfully" });
+    res.json({ success: true, message: "Đã xóa phòng thành công" });
   } catch (error) {
     console.error("❌ Error deleting room:", error.message);
     res.json({ success: false, message: error.message });

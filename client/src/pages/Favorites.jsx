@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useAuth } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
+import { translateAmenity, translateRoomType } from '../utils/translations'
 
 const Favorites = () => {
   const { isSignedIn, getToken } = useAuth()
@@ -76,9 +77,9 @@ const Favorites = () => {
                   </div>
                 )}
                 <div className="p-4">
-                  <div className="font-medium mb-1">{room.roomType || 'Phòng'}</div>
+                  <div className="font-medium mb-1">{translateRoomType(room.roomType) || 'Phòng'}</div>
                   <div className="text-sm text-gray-600">
-                    {Array.isArray(room.amenities) ? room.amenities.slice(0, 3).join(' • ') : ''}
+                    {Array.isArray(room.amenities) ? room.amenities.slice(0, 3).map(translateAmenity).join(' • ') : ''}
                   </div>
                   <div className="mt-2 font-semibold">
                     {typeof room.pricePerNight === 'number' ? `${room.pricePerNight.toLocaleString()} đ/đêm` : ''}

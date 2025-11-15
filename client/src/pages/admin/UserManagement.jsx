@@ -38,7 +38,7 @@ const UserManagement = () => {
 
     const handleUpdateRole = async (userId) => {
         if (!selectedRole) {
-            toast.error('Vui lòng chọn role');
+            toast.error('Vui lòng chọn vai trò');
             return;
         }
 
@@ -50,12 +50,12 @@ const UserManagement = () => {
             );
 
             if (data.success) {
-                toast.success('Cập nhật role thành công');
+                toast.success('Cập nhật vai trò thành công');
                 setEditingUser(null);
                 setSelectedRole('');
                 fetchUsers();
             } else {
-                toast.error(data.message || 'Không thể cập nhật role');
+                toast.error(data.message || 'Không thể cập nhật vai trò');
             }
         } catch (error) {
             toast.error(error.message || 'Có lỗi xảy ra');
@@ -111,7 +111,7 @@ const UserManagement = () => {
     const getRoleLabel = (role) => {
         switch (role) {
             case 'admin':
-                return 'Admin';
+                return 'Quản trị viên';
             case 'hotelOwner':
                 return 'Chủ khách sạn';
             default:
@@ -148,7 +148,7 @@ const UserManagement = () => {
                                         Email
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Role
+                                        Vai trò
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Ngày tạo
@@ -188,7 +188,7 @@ const UserManagement = () => {
                                                     >
                                                         <option value="user">Người dùng</option>
                                                         <option value="hotelOwner">Chủ khách sạn</option>
-                                                        <option value="admin">Admin</option>
+                                                        <option value="admin">Quản trị viên</option>
                                                     </select>
                                                     <button
                                                         onClick={() => handleUpdateRole(u._id)}

@@ -20,6 +20,7 @@ export const AppProvider = ({ children }) => {
     const [showHotelReg, setShowHotelReg] = useState(false);
     const [searchedCities, setSearchedCities] = useState([]);
     const [rooms, setRooms] = useState([]);
+    const [hotelStatusUpdated, setHotelStatusUpdated] = useState(0); // Counter to trigger refresh
     
     const fetchRooms = async()=>{
         try {
@@ -30,7 +31,7 @@ export const AppProvider = ({ children }) => {
                 toast.error(data.message)
             }
         } catch (error) {   
-            toast.error(error.message)
+            toast.error(error.message || 'Có lỗi xảy ra khi tải danh sách phòng')
         }
     }
 
@@ -54,7 +55,7 @@ export const AppProvider = ({ children }) => {
                 },5000)
             }
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error.message || 'Có lỗi xảy ra khi tải thông tin người dùng');
         }
     };
 
@@ -86,6 +87,8 @@ export const AppProvider = ({ children }) => {
         rooms,
         setRooms,
         fetchRooms,
+        hotelStatusUpdated,
+        setHotelStatusUpdated,
     };
 
     return (

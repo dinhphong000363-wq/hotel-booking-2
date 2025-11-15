@@ -10,7 +10,7 @@ const Navbar = () => {
                 <img src={assets.logo} alt="logo" className='h-9 invert opacity-80' />
             </Link>
             <div className='flex items-center gap-4'>
-                <span className='text-sm text-gray-600'>Admin Panel</span>
+                <span className='text-sm text-gray-600'>Bảng quản trị</span>
                 <UserButton />
             </div>
         </div>

@@ -1,9 +1,11 @@
 import React from 'react'
 import { assets } from '../assets/assets'
 import { Link } from "react-router-dom";
+import { useAppContext } from '../conext/AppContext';
 
 
 const HotelCard = ({ room, index }) => {
+    const { currency } = useAppContext();
     return (
         <Link to={`/rooms/${room._id}`} onClick={() => scrollTo(0, 0)}
             className="relative max-w-70 w-full rounded-xl overflow-hidden bg-white text-gray-500/90 shadow-[0px_4px_4px_rgba(0,0,0,0.05)]"
@@ -17,7 +19,7 @@ const HotelCard = ({ room, index }) => {
 
             {index % 2 === 0 && (
                 <p className="px-3 py-1 absolute top-3 left-3 text-xs bg-white text-gray-800 font-medium rounded-full">
-                    Best Seller
+                    Bán chạy
                 </p>
             )}
 
@@ -36,9 +38,9 @@ const HotelCard = ({ room, index }) => {
                 <div className='flex items-center justify-between mt-4'>
                     <p>
                         <span className='text-xl text-gray-800'>
-                            ${room.pricePerNight}
+                            {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')}
                         </span>
-                        /night
+                        /đêm
                     </p>
                     <button
                         className="px-4 py-2 text-sm font-medium 
@@ -48,7 +50,7 @@ const HotelCard = ({ room, index }) => {
              transition-all duration-300 ease-in-out 
              cursor-pointer hover:scale-105 shadow-sm"
                     >
-                        Book Now
+                        Đặt ngay
                     </button>
 
                 </div>

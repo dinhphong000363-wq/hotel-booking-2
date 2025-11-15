@@ -9,6 +9,7 @@ import {
   deleteUser,
   getAllHotels,
   getDashboardStats,
+  deleteHotel,
 } from "../controllers/adminControllers.js";
 
 const adminRouter = express.Router();
@@ -22,6 +23,7 @@ adminRouter.get("/hotels/pending", getPendingHotels);
 adminRouter.get("/hotels", getAllHotels);
 adminRouter.put("/hotels/:hotelId/approve", approveHotel);
 adminRouter.put("/hotels/:hotelId/reject", rejectHotel);
+adminRouter.delete("/hotels/:hotelId", deleteHotel);
 
 // Dashboard route
 adminRouter.get("/dashboard/stats", getDashboardStats);
