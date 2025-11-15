@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import HotelCard from './HotelCard'
 import Title from './Title'
 import { useAppContext } from '../conext/AppContext'
@@ -6,7 +6,14 @@ import { useAppContext } from '../conext/AppContext'
 const FeaturedDestination = () => {
   const { rooms, navigate } = useAppContext()
 
-  if (rooms.length === 0) return null
+  // Shuffle mảng rooms để hiển thị ngẫu nhiên, chỉ shuffle lại khi rooms thay đổi
+  const featuredRooms = useMemo(() => {
+    if (rooms.length === 0) return []
+    const shuffled = [...rooms].sort(() => Math.random() - 0.5)
+    return shuffled.slice(0, 4)
+  }, [rooms])
+
+  if (featuredRooms.length === 0) return null
 
   return (
     <section className="flex flex-col items-center px-6 md:px-16 lg:px-24 bg-gradient-to-b from-white to-slate-50 py-24">
@@ -19,7 +26,7 @@ const FeaturedDestination = () => {
 
       {/* Grid Card */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-16 w-full max-w-6xl">
-        {rooms.slice(0, 4).map((room, index) => (
+        {featuredRooms.map((room, index) => (
           <div
             key={room._id}
             className="

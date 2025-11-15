@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react'
 import Title from '../../components/Title'
 import { useAppContext } from '../../conext/AppContext'
 import toast from 'react-hot-toast'
-import { assets } from '../../assets/assets'
+import { assets, cities } from '../../assets/assets'
+import { districts } from '../../utils/vietnamDistricts'
+import { streets, houseNumbers } from '../../utils/vietnamStreets'
 
 const HotelInfo = () => {
     const { axios, getToken, user } = useAppContext()
@@ -12,10 +14,16 @@ const HotelInfo = () => {
     const [isEditing, setIsEditing] = useState(false)
     const [formData, setFormData] = useState({
         name: '',
-        address: '',
         contact: '',
         city: '',
+        district: '',
+        street: '',
+        houseNumber: '',
     })
+    
+    // Lấy danh sách quận/huyện và đường phố dựa trên thành phố và quận đã chọn
+    const availableDistricts = formData.city ? (districts[formData.city] || []) : []
+    const availableStreets = (formData.city && formData.district) ? (streets[formData.city]?.[formData.district] || []) : []
 
     const fetchHotelInfo = async () => {
         try {
@@ -29,9 +37,11 @@ const HotelInfo = () => {
                 setHotel(data.hotel)
                 setFormData({
                     name: data.hotel.name || '',
-                    address: data.hotel.address || '',
                     contact: data.hotel.contact || '',
                     city: data.hotel.city || '',
+                    district: data.hotel.district || '',
+                    street: data.hotel.street || '',
+                    houseNumber: data.hotel.houseNumber || '',
                 })
             } else {
                 toast.error(data.message || 'Không thể tải thông tin khách sạn')
@@ -51,22 +61,42 @@ const HotelInfo = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }))
+        setFormData(prev => {
+            const updated = {
+                ...prev,
+                [name]: value
+            }
+            // Reset district và street khi đổi thành phố
+            if (name === 'city') {
+                updated.district = ''
+                updated.street = ''
+            }
+            // Reset street khi đổi quận
+            if (name === 'district') {
+                updated.street = ''
+            }
+            return updated
+        })
     }
 
     const handleSave = async () => {
-        if (!formData.name || !formData.address || !formData.contact || !formData.city) {
+        if (!formData.name || !formData.contact || !formData.city || !formData.district || !formData.street || !formData.houseNumber) {
             toast.error('Vui lòng điền đầy đủ thông tin')
             return
         }
 
         setSaving(true)
         try {
+            // Tạo địa chỉ đầy đủ
+            const fullAddress = `${formData.houseNumber ? formData.houseNumber + ', ' : ''}${formData.street ? formData.street + ', ' : ''}${formData.district ? formData.district + ', ' : ''}${formData.city}`
+            const address = fullAddress // Giữ cho tương thích ngược
+            
             const token = await getToken()
-            const { data } = await axios.put('/api/hotels/owner', formData, {
+            const { data } = await axios.put('/api/hotels/owner', {
+                ...formData,
+                address,
+                fullAddress
+            }, {
                 headers: { Authorization: `Bearer ${token}` }
             })
 
@@ -89,9 +119,11 @@ const HotelInfo = () => {
         if (hotel) {
             setFormData({
                 name: hotel.name || '',
-                address: hotel.address || '',
                 contact: hotel.contact || '',
                 city: hotel.city || '',
+                district: hotel.district || '',
+                street: hotel.street || '',
+                houseNumber: hotel.houseNumber || '',
             })
         }
         setIsEditing(false)
@@ -183,43 +215,145 @@ const HotelInfo = () => {
                         )}
                     </div>
 
-                    {/* Địa chỉ */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Địa chỉ <span className="text-red-500">*</span>
-                        </label>
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Nhập địa chỉ"
-                            />
-                        ) : (
-                            <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800">{hotel.address}</p>
-                        )}
-                    </div>
-
                     {/* Thành phố */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Thành phố <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
-                            <input
-                                type="text"
+                            <select
                                 name="city"
                                 value={formData.city}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Nhập thành phố"
-                            />
+                            >
+                                <option value="">Chọn thành phố</option>
+                                {cities.map((city) => (
+                                    <option key={city} value={city}>{city}</option>
+                                ))}
+                            </select>
                         ) : (
                             <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800">{hotel.city}</p>
                         )}
                     </div>
+
+                    {/* Quận/Huyện */}
+                    {isEditing && formData.city && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Quận/Huyện <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                name="district"
+                                value={formData.district}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="">Chọn quận/huyện</option>
+                                {availableDistricts.map((dist) => (
+                                    <option key={dist} value={dist}>{dist}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    {!isEditing && hotel.district && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Quận/Huyện
+                            </label>
+                            <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800">{hotel.district}</p>
+                        </div>
+                    )}
+
+                    {/* Đường */}
+                    {isEditing && formData.district && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Đường <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                name="street"
+                                value={formData.street}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="">Chọn đường</option>
+                                {availableStreets.length > 0 ? (
+                                    availableStreets.map((str) => (
+                                        <option key={str} value={str}>{str}</option>
+                                    ))
+                                ) : (
+                                    <option value="" disabled>Chưa có dữ liệu đường cho quận này</option>
+                                )}
+                            </select>
+                            {availableStreets.length === 0 && (
+                                <input
+                                    type="text"
+                                    name="street"
+                                    value={formData.street}
+                                    onChange={handleInputChange}
+                                    placeholder="Nhập tên đường nếu không có trong danh sách"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2"
+                                />
+                            )}
+                        </div>
+                    )}
+                    {!isEditing && hotel.street && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Đường
+                            </label>
+                            <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800">{hotel.street}</p>
+                        </div>
+                    )}
+
+                    {/* Số nhà */}
+                    {isEditing && formData.street && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Số nhà <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                name="houseNumber"
+                                value={formData.houseNumber}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="">Chọn số nhà</option>
+                                {houseNumbers.map((num) => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
+                            <input
+                                type="text"
+                                name="houseNumber"
+                                value={formData.houseNumber}
+                                onChange={handleInputChange}
+                                placeholder="Hoặc nhập số nhà khác"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2"
+                            />
+                        </div>
+                    )}
+                    {!isEditing && hotel.houseNumber && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Số nhà
+                            </label>
+                            <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800">{hotel.houseNumber}</p>
+                        </div>
+                    )}
+
+                    {/* Địa chỉ đầy đủ (chỉ hiển thị khi không chỉnh sửa) */}
+                    {!isEditing && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Địa chỉ đầy đủ
+                            </label>
+                            <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800">
+                                {hotel.fullAddress || hotel.address}
+                            </p>
+                        </div>
+                    )}
 
                     {/* Liên hệ */}
                     <div>

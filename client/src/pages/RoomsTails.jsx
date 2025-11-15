@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { assets, facilityIcons, roomCommonData } from '../assets/assets'
 import { useAppContext } from '../conext/AppContext'
 import { translateAmenity, translateRoomType } from '../utils/translations'
 import toast from 'react-hot-toast'
+import GoogleMap from '../components/GoogleMap'
 
 const StaticRating = () => (
     <div className="flex">
@@ -39,6 +40,9 @@ const RoomsTails = () => {
     const [userRating, setUserRating] = useState(0);
     const [comment, setComment] = useState('');
     const [submittingReview, setSubmittingReview] = useState(false);
+    const [mapExpanded, setMapExpanded] = useState(false);
+    const [showMapModal, setShowMapModal] = useState(false);
+    const mapSectionRef = useRef(null);
     const averageDisplay = Number(averageRating || 0).toFixed(1);
 
     const StarIcon = ({ filled, className = "w-5 h-5" }) => (
@@ -266,8 +270,10 @@ const RoomsTails = () => {
         fetchFavorites();
         fetchReviews();
     }, [fetchFavorites, fetchReviews]);
+    if (!room) return null;
+
     return (
-        room && (
+        <>
             <div className="py-28 md:py-35 px-4 md:px-16 lg:px-24 xl:px-32">
                 {/* Room Details */}
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
@@ -278,9 +284,11 @@ const RoomsTails = () => {
                         </span>
                     </h1>
 
-                    <p className="text-xs font-inter py-1.5 px-3 text-white bg-orange-500 rounded-full">
-                        Giảm 20%
-                    </p>
+                    {room.discount && room.discount > 0 && (
+                        <p className="text-xs font-inter py-1.5 px-3 text-white bg-rose-500 rounded-full font-bold shadow-lg">
+                            Giảm {room.discount}%
+                        </p>
+                    )}
                 </div>
 
                 {/* Room Rating */}
@@ -335,9 +343,34 @@ const RoomsTails = () => {
                 </div>
 
                 {/* Room Address */}
-                <div className="flex items-center gap-1 text-gray-500 mt-2">
-                    <img src={assets.locationIcon} alt="location-icon" />
-                    <span>{room.hotel.address}</span>
+                <div className="flex items-center gap-2 text-gray-500 mt-2">
+                    <img src={assets.locationIcon} alt="location-icon" className="w-4 h-4" />
+                    <span 
+                        className="cursor-pointer hover:text-indigo-600 transition-colors"
+                        onClick={() => {
+                            if (mapSectionRef.current) {
+                                mapSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                setTimeout(() => {
+                                    setMapExpanded(true);
+                                }, 500);
+                            }
+                        }}
+                    >
+                        {room.hotel.fullAddress || room.hotel.address}
+                    </span>
+                    <button
+                        onClick={() => {
+                            const address = encodeURIComponent(room.hotel.fullAddress || room.hotel.address);
+                            window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
+                        }}
+                        className="ml-2 px-3 py-1 text-xs bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-all flex items-center gap-1"
+                        title="Mở Google Maps"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Mở Maps
+                    </button>
                 </div>
 
                 {/* Images */}
@@ -397,9 +430,25 @@ const RoomsTails = () => {
                 </div>
 
                 {/* Room Price */}
-                <p className="text-2xl font-medium mt-6">
-                    {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} / đêm
-                </p>
+                <div className="mt-6">
+                    {room.discount && room.discount > 0 ? (
+                        <div>
+                            <p className="text-lg text-gray-500 line-through">
+                                {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} / đêm
+                            </p>
+                            <p className="text-2xl font-semibold text-rose-600 mt-1">
+                                {currency}{Number(room.pricePerNight * (1 - room.discount / 100)).toLocaleString('vi-VN')} / đêm
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                                Tiết kiệm {currency}{Number(room.pricePerNight * (room.discount / 100)).toLocaleString('vi-VN')} mỗi đêm
+                            </p>
+                        </div>
+                    ) : (
+                        <p className="text-2xl font-medium">
+                            {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} / đêm
+                        </p>
+                    )}
+                </div>
                 {/* form */}
                 <form
                     onSubmit={onSubmitHandle}
@@ -607,6 +656,42 @@ const RoomsTails = () => {
                         Khách sẽ được phân bổ ở tầng trệt tùy theo tình trạng phòng trống.
                         Bạn sẽ có một căn hộ hai phòng ngủ thoải mái mang đậm phong cách thành phố.</p>
                 </div>
+
+                {/* Google Map Section */}
+                <div ref={mapSectionRef} className="mt-16">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-6">Vị trí</h2>
+                    <div className="relative">
+                        <GoogleMap 
+                            address={room.hotel.fullAddress || room.hotel.address}
+                            isExpanded={mapExpanded}
+                            onExpand={() => setShowMapModal(true)}
+                        />
+                        <div className="absolute bottom-4 right-4 flex gap-2 z-10">
+                            <button
+                                onClick={() => setShowMapModal(true)}
+                                className="px-4 py-2 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm font-medium text-gray-700"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                </svg>
+                                Xem lớn hơn
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const address = encodeURIComponent(room.hotel.fullAddress || room.hotel.address);
+                                    window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
+                                }}
+                                className="px-4 py-2 bg-indigo-500 text-white rounded-lg shadow-lg hover:bg-indigo-600 transition-all flex items-center gap-2 text-sm font-medium"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                Mở Google Maps
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 {/* contact */}
                 <div className="flex flex-col items-start gap-4">
                     <div className="flex gap-4">
@@ -632,12 +717,57 @@ const RoomsTails = () => {
                         Liên hệ ngay
                     </button>
                 </div>
-
-
-
             </div>
 
-        )
+            {/* Map Modal */}
+            {showMapModal && (
+                <div 
+                    className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowMapModal(false)}
+                >
+                    <div 
+                        className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between p-4 border-b">
+                            <h3 className="text-xl font-semibold text-gray-800">Bản đồ</h3>
+                            <button
+                                onClick={() => setShowMapModal(false)}
+                                className="text-gray-500 hover:text-gray-700 text-2xl"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div className="p-4">
+                            <GoogleMap 
+                                address={room.hotel.fullAddress || room.hotel.address}
+                                isExpanded={true}
+                            />
+                        </div>
+                        <div className="p-4 border-t flex justify-end gap-3">
+                            <button
+                                onClick={() => {
+                                    const address = encodeURIComponent(room.hotel.fullAddress || room.hotel.address);
+                                    window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
+                                }}
+                                className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-all flex items-center gap-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                Mở Google Maps
+                            </button>
+                            <button
+                                onClick={() => setShowMapModal(false)}
+                                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     )
 }
 

@@ -4,7 +4,7 @@ import Room from "../models/Room.js";
 // API to create a new room for a hotel
 export const createRoom = async (req, res) => {
   try {
-    const { roomType, pricePerNight, amenities } = req.body;
+    const { roomType, pricePerNight, amenities, discount } = req.body;
 
     // ✅ Tìm khách sạn theo chủ sở hữu
     const hotel = await Hotel.findOne({ owner: req.auth.userId });
@@ -33,6 +33,7 @@ export const createRoom = async (req, res) => {
       pricePerNight: +pricePerNight,
       amenities: JSON.parse(amenities),
       images,
+      discount: discount ? +discount : 0,
     });
 
     res.json({ success: true, message: "Đã tạo phòng thành công" });
@@ -94,7 +95,7 @@ export const toggleRoomAvailability = async (req, res) => {
 export const updateRoom = async (req, res) => {
   try {
     const { id } = req.params;
-    const { roomType, pricePerNight, amenities } = req.body;
+    const { roomType, pricePerNight, amenities, discount } = req.body;
 
     // Tìm khách sạn theo chủ sở hữu
     const hotel = await Hotel.findOne({ owner: req.auth.userId });
@@ -116,6 +117,7 @@ export const updateRoom = async (req, res) => {
     if (roomType) room.roomType = roomType;
     if (pricePerNight) room.pricePerNight = +pricePerNight;
     if (amenities) room.amenities = JSON.parse(amenities);
+    if (discount !== undefined) room.discount = +discount;
 
     // Nếu có ảnh mới, tải lên Cloudinary
     if (req.files && req.files.length > 0) {

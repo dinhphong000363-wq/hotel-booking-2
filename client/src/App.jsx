@@ -21,6 +21,8 @@ import {Toaster} from 'react-hot-toast'
 import { useAppContext } from './conext/AppContext'
 import Loader from './components/Loader'
 import Favorites from './pages/Favorites'
+import DiscountedRooms from './pages/DiscountedRooms'
+import PendingHotelInfo from './pages/PendingHotelInfo'
 
 const App = () => {
   const location = useLocation()
@@ -37,8 +39,10 @@ const App = () => {
           <Route path='/' element={<Home />} />
           <Route path='/rooms' element={<AllRooms />} />
           <Route path='/rooms/:id' element={<RoomsTails />} />
+          <Route path='/discounted-rooms' element={<DiscountedRooms />} />
           <Route path='/my-bookings' element={<MyBookings />} />
           <Route path='/favorites' element={<Favorites />} />
+          <Route path='/pending-hotel-info' element={<PendingHotelInfo />} />
           <Route path='/loader/:nextUrl' element={<Loader />} />
           <Route path='/owner' element={<Layout />}>
             <Route index element={<Dashboard />} />

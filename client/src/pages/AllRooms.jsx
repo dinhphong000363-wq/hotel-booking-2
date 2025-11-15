@@ -178,21 +178,34 @@ const AllRooms = () => {
                     <div className="mt-1 w-24 h-[2px] bg-indigo-500 rounded-full"></div>
                 </div>
 
-                {filteredRooms.map((room) => (
+                {filteredRooms.map((room) => {
+                    const hasDiscount = room.discount && room.discount > 0;
+                    const discountedPrice = hasDiscount 
+                        ? room.pricePerNight * (1 - room.discount / 100) 
+                        : room.pricePerNight;
+                    
+                    return (
                     <div
                         key={room._id}
                         className="group flex flex-col md:flex-row items-start gap-6 py-10 border-b border-gray-200 last:border-none transition-all duration-300 hover:bg-white/70 hover:shadow-xl rounded-2xl px-4 md:px-6"
                     >
-                        <img
-                            onClick={() => {
-                                navigate(`/rooms/${room._id}`);
-                                scrollTo(0, 0);
-                            }}
-                            src={room.images[0]}
-                            alt="hotel-img"
-                            title="Xem chi tiết phòng"
-                            className="md:w-1/2 h-72 object-cover rounded-2xl shadow-md cursor-pointer transform group-hover:scale-[1.02] transition-transform duration-500 ease-out"
-                        />
+                        <div className="md:w-1/2 relative">
+                            <img
+                                onClick={() => {
+                                    navigate(`/rooms/${room._id}`);
+                                    scrollTo(0, 0);
+                                }}
+                                src={room.images[0]}
+                                alt="hotel-img"
+                                title="Xem chi tiết phòng"
+                                className="w-full h-72 object-cover rounded-2xl shadow-md cursor-pointer transform group-hover:scale-[1.02] transition-transform duration-500 ease-out"
+                            />
+                            {hasDiscount && (
+                                <p className="absolute top-3 right-3 px-3 py-1 text-xs bg-rose-500 text-white font-bold rounded-full shadow-lg">
+                                    -{room.discount}%
+                                </p>
+                            )}
+                        </div>
 
                         <div className="md:w-1/2 flex flex-col justify-between gap-4">
                             <div>
@@ -235,12 +248,25 @@ const AllRooms = () => {
                             </div>
 
                             {/* --- giá --- */}
-                            <div className="text-xl font-semibold text-indigo-600 mt-2">
-                                {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} <span className="text-sm text-gray-500 font-normal">/ đêm</span>
+                            <div className="mt-2">
+                                {hasDiscount ? (
+                                    <div>
+                                        <p className="text-sm text-gray-500 line-through">
+                                            {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} / đêm
+                                        </p>
+                                        <p className="text-xl font-semibold text-rose-600">
+                                            {currency}{Number(discountedPrice).toLocaleString('vi-VN')} <span className="text-sm text-gray-500 font-normal">/ đêm</span>
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="text-xl font-semibold text-indigo-600">
+                                        {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} <span className="text-sm text-gray-500 font-normal">/ đêm</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
-                ))}
+                )})}
             </div>
 
             {/* --- BỘ LỌC --- */}
@@ -253,7 +279,12 @@ const AllRooms = () => {
                         <span onClick={() => setOpenFilters(!openFilters)} className="lg:hidden">
                             {openFilters ? 'Ẩn' : 'Hiện'}
                         </span>
-                        <span className="hidden lg:block hover:underline">Xóa tất cả</span>
+                        <span 
+                            onClick={clearFilters}
+                            className="hidden lg:block hover:underline"
+                        >
+                            Xóa tất cả
+                        </span>
                     </div>
                 </div>
 

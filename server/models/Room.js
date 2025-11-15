@@ -8,6 +8,7 @@ const roomSchema = new mongoose.Schema(
     amenities: { type: Array, required: true },
     images: [{ type: String }],
     isAvailable: { type: Boolean, default: true },
+    discount: { type: Number, default: 0, min: 0, max: 40 }, // 0, 10, 20, 30, 40%
   },
   { timestamps: true }
 );

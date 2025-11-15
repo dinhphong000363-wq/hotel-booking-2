@@ -6,6 +6,11 @@ import { useAppContext } from '../conext/AppContext';
 
 const HotelCard = ({ room, index }) => {
     const { currency } = useAppContext();
+    const hasDiscount = room.discount && room.discount > 0;
+    const discountedPrice = hasDiscount 
+        ? room.pricePerNight * (1 - room.discount / 100) 
+        : room.pricePerNight;
+    
     return (
         <Link to={`/rooms/${room._id}`} onClick={() => scrollTo(0, 0)}
             className="relative max-w-70 w-full rounded-xl overflow-hidden bg-white text-gray-500/90 shadow-[0px_4px_4px_rgba(0,0,0,0.05)]"
@@ -16,8 +21,14 @@ const HotelCard = ({ room, index }) => {
                 className="w-full h-48 object-cover rounded-t-xl"
             />
 
+            {/* Badge giảm giá */}
+            {hasDiscount && (
+                <p className="px-3 py-1 absolute top-3 right-3 text-xs bg-rose-500 text-white font-bold rounded-full shadow-lg">
+                    -{room.discount}%
+                </p>
+            )}
 
-            {index % 2 === 0 && (
+            {index % 2 === 0 && !hasDiscount && (
                 <p className="px-3 py-1 absolute top-3 left-3 text-xs bg-white text-gray-800 font-medium rounded-full">
                     Bán chạy
                 </p>
@@ -36,12 +47,28 @@ const HotelCard = ({ room, index }) => {
                 </div>
 
                 <div className='flex items-center justify-between mt-4'>
-                    <p>
-                        <span className='text-xl text-gray-800'>
-                            {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')}
-                        </span>
-                        /đêm
-                    </p>
+                    <div>
+                        {hasDiscount ? (
+                            <div>
+                                <p className='text-sm text-gray-500 line-through'>
+                                    {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')}
+                                </p>
+                                <p>
+                                    <span className='text-xl text-rose-600 font-semibold'>
+                                        {currency}{Number(discountedPrice).toLocaleString('vi-VN')}
+                                    </span>
+                                    <span className='text-sm text-gray-500'>/đêm</span>
+                                </p>
+                            </div>
+                        ) : (
+                            <p>
+                                <span className='text-xl text-gray-800'>
+                                    {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')}
+                                </span>
+                                /đêm
+                            </p>
+                        )}
+                    </div>
                     <button
                         className="px-4 py-2 text-sm font-medium 
              border border-gray-300 rounded-lg 

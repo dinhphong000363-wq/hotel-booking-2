@@ -2,28 +2,50 @@ import React, { useState } from 'react'
 import { assets, cities } from '../assets/assets'
 import { useAppContext } from '../conext/AppContext'
 import toast from 'react-hot-toast';
+import { districts } from '../utils/vietnamDistricts';
+import { streets, houseNumbers } from '../utils/vietnamStreets';
 
 const HotelReg = () => {
     const { setShowHotelReg,axios, getToken , setIsOwner, setHotelStatusUpdated } = useAppContext();
 
     const [name, setName] = useState("");
-    const [address, setAddress] = useState("");
     const [contact, setContact] = useState("");
     const [city, setCity] = useState("");
+    const [district, setDistrict] = useState("");
+    const [street, setStreet] = useState("");
+    const [houseNumber, setHouseNumber] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    
+    // Lấy danh sách quận/huyện dựa trên thành phố đã chọn
+    const availableDistricts = city ? (districts[city] || []) : [];
+    
+    // Lấy danh sách đường phố dựa trên thành phố và quận đã chọn
+    const availableStreets = (city && district) ? (streets[city]?.[district] || []) : [];
 
     const onSubmitHandle = async(event)=>{
         try {
             event.preventDefault();
             setSubmitting(true);
-            const {data} = await axios.post(`/api/hotels`, {name,address,contact,city},{headers:{Authorization:`Bearer ${await getToken()}`}})
+            
+            // Tạo địa chỉ đầy đủ
+            const fullAddress = `${houseNumber ? houseNumber + ', ' : ''}${street ? street + ', ' : ''}${district ? district + ', ' : ''}${city}`;
+            const address = fullAddress; // Giữ cho tương thích ngược
+            
+            const {data} = await axios.post(`/api/hotels`, {
+                name,
+                address, // Địa chỉ đầy đủ (tương thích ngược)
+                contact,
+                city,
+                district,
+                street,
+                houseNumber,
+                fullAddress
+            }, {headers:{Authorization:`Bearer ${await getToken()}`}})
+            
             if(data.success){
                 setSubmitted(true);
                 toast.success(data.message)
-                // Don't set isOwner yet - wait for admin approval
-                // Don't close form immediately - show status message
-                // Trigger Navbar refresh to show pending status
                 setHotelStatusUpdated(prev => prev + 1);
             }else{
                 toast.error(data.message)
@@ -39,9 +61,24 @@ const HotelReg = () => {
         setShowHotelReg(false);
         setSubmitted(false);
         setName("");
-        setAddress("");
         setContact("");
         setCity("");
+        setDistrict("");
+        setStreet("");
+        setHouseNumber("");
+    }
+    
+    // Reset district và street khi đổi thành phố
+    const handleCityChange = (e) => {
+        setCity(e.target.value);
+        setDistrict(""); // Reset quận khi đổi thành phố
+        setStreet(""); // Reset đường khi đổi thành phố
+    }
+    
+    // Reset street khi đổi quận
+    const handleDistrictChange = (e) => {
+        setDistrict(e.target.value);
+        setStreet(""); // Reset đường khi đổi quận
     }
 
     return (
@@ -91,26 +128,13 @@ const HotelReg = () => {
                             required
                         />
                     </div>
-                    {/* adress */}
+                    {/* Thành phố */}
                     <div className="w-full mt-4">
-                        <label htmlFor="adress" className="font-medium text-gray-500">Địa chỉ</label>
-                        <input
-                            id="adress"
-                            type="text"
-                            placeholder="Nhập thông tin"
-                            className="border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light"
-                             onChange={(e)=>setAddress(e.target.value)}
-                            value={address}
-                            required
-                        />
-                    </div>
-                    {/* city */}
-                    <div className="w-full mt-4 max-w-60 mr-auto">
                         <label htmlFor="city" className="font-medium text-gray-500">Thành phố</label>
                         <select
                             id="city"
                             className="border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light"
-                             onChange={(e)=>setCity(e.target.value)}
+                            onChange={handleCityChange}
                             value={city}
                             required
                         >
@@ -120,6 +144,83 @@ const HotelReg = () => {
                             ))}
                         </select>
                     </div>
+                    
+                    {/* Quận/Huyện */}
+                    {city && (
+                        <div className="w-full mt-4">
+                            <label htmlFor="district" className="font-medium text-gray-500">Quận/Huyện</label>
+                            <select
+                                id="district"
+                                className="border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light"
+                                onChange={handleDistrictChange}
+                                value={district}
+                                required
+                            >
+                                <option value="">Chọn quận/huyện</option>
+                                {availableDistricts.map((dist) => (
+                                    <option key={dist} value={dist}>{dist}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    
+                    {/* Đường */}
+                    {district && (
+                        <div className="w-full mt-4">
+                            <label htmlFor="street" className="font-medium text-gray-500">Đường</label>
+                            <select
+                                id="street"
+                                className="border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light"
+                                onChange={(e)=>setStreet(e.target.value)}
+                                value={street}
+                                required
+                            >
+                                <option value="">Chọn đường</option>
+                                {availableStreets.length > 0 ? (
+                                    availableStreets.map((str) => (
+                                        <option key={str} value={str}>{str}</option>
+                                    ))
+                                ) : (
+                                    <option value="" disabled>Chưa có dữ liệu đường cho quận này</option>
+                                )}
+                            </select>
+                            {availableStreets.length === 0 && (
+                                <input
+                                    type="text"
+                                    placeholder="Nhập tên đường nếu không có trong danh sách"
+                                    className="border border-gray-200 rounded w-full px-3 py-2.5 mt-2 outline-indigo-500 font-light"
+                                    onChange={(e)=>setStreet(e.target.value)}
+                                    value={street}
+                                />
+                            )}
+                        </div>
+                    )}
+                    
+                    {/* Số nhà */}
+                    {street && (
+                        <div className="w-full mt-4">
+                            <label htmlFor="houseNumber" className="font-medium text-gray-500">Số nhà</label>
+                            <select
+                                id="houseNumber"
+                                className="border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light"
+                                onChange={(e)=>setHouseNumber(e.target.value)}
+                                value={houseNumber}
+                                required
+                            >
+                                <option value="">Chọn số nhà</option>
+                                {houseNumbers.map((num) => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
+                            <input
+                                type="text"
+                                placeholder="Hoặc nhập số nhà khác"
+                                className="border border-gray-200 rounded w-full px-3 py-2.5 mt-2 outline-indigo-500 font-light"
+                                onChange={(e)=>setHouseNumber(e.target.value)}
+                                value={houseNumber}
+                            />
+                        </div>
+                    )}
                     <button 
                         type="submit"
                         disabled={submitting}
@@ -158,8 +259,7 @@ const HotelReg = () => {
                                         <p className="font-medium">Thông tin đã đăng ký:</p>
                                         <div className="bg-white rounded-lg p-3 text-left space-y-1">
                                             <p><span className="font-semibold">Tên khách sạn:</span> {name}</p>
-                                            <p><span className="font-semibold">Địa chỉ:</span> {address}</p>
-                                            <p><span className="font-semibold">Thành phố:</span> {city}</p>
+                                            <p><span className="font-semibold">Địa chỉ:</span> {houseNumber ? houseNumber + ', ' : ''}{street ? street + ', ' : ''}{district ? district + ', ' : ''}{city}</p>
                                             <p><span className="font-semibold">Số điện thoại:</span> {contact}</p>
                                         </div>
                                     </div>

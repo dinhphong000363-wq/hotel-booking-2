@@ -18,6 +18,7 @@ const AddRoom = () => {
     const [inputs, setInputs] = useState({
         roomType: '',
         pricePerNight: '',
+        discount: '0',
         amenities: {
             'Free WiFi': false,
             'Free Breakfast': false,
@@ -46,6 +47,7 @@ const AddRoom = () => {
             const formData = new FormData();
             formData.append('roomType', inputs.roomType);
             formData.append('pricePerNight', inputs.pricePerNight);
+            formData.append('discount', inputs.discount);
 
             const amenities = Object.keys(inputs.amenities || {}).filter(
                 (key) => inputs.amenities[key]
@@ -70,6 +72,7 @@ const AddRoom = () => {
                 setInputs({
                     roomType: '',
                     pricePerNight: '',
+                    discount: '0',
                     amenities: {
                         'Free WiFi': false,
                         'Free Breakfast': false,
@@ -172,6 +175,27 @@ const AddRoom = () => {
                         }
                     />
                 </div>
+            </div>
+
+            {/* Giảm giá */}
+            <div className="mt-10">
+                <label className="text-gray-800 font-medium">Giảm giá</label>
+                <select
+                    value={inputs.discount}
+                    onChange={(e) =>
+                        setInputs({ ...inputs, discount: e.target.value })
+                    }
+                    className="border border-gray-300 mt-2 rounded-lg p-3 w-full text-gray-700 focus:ring-2 focus:ring-primary outline-none transition-all"
+                >
+                    <option value="0">Không giảm giá</option>
+                    <option value="10">10%</option>
+                    <option value="20">20%</option>
+                    <option value="30">30%</option>
+                    <option value="40">40%</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                    Chọn mức giảm giá để phòng xuất hiện trong chương trình giảm giá ngày đông
+                </p>
             </div>
 
             {/* Tiện nghi */}

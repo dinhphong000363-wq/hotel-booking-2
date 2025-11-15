@@ -5,8 +5,14 @@ import { useAppContext } from '../conext/AppContext'
 
 const RecommendedHotels = () => {
     const { rooms, navigate } = useAppContext()
-    return rooms.length > 0 && (
 
+    // Lọc các phòng có giảm giá (discount > 0)
+    const discountedRooms = rooms.filter(room => room.discount && room.discount > 0)
+
+    // Nếu không có phòng giảm giá thì không hiển thị component này
+    if (discountedRooms.length === 0) return null
+
+    return (
         <div className="relative flex flex-col items-center px-6 md:px-16 lg:px-24 bg-gradient-to-b from-white to-slate-50 py-20 overflow-hidden">
 
             {/* Hiệu ứng nền nhẹ */}
@@ -14,13 +20,13 @@ const RecommendedHotels = () => {
 
             {/* Tiêu đề */}
             <Title
-                title="Khách sạn được đề xuất"
-                subTitle="Khám phá những điểm đến sang trọng và độc đáo — nơi mỗi kỳ nghỉ đều là một trải nghiệm đáng nhớ."
+                title="Chương trình giảm giá ngày đông"
+                subTitle="Chương trình giảm giá ngày đông được áp dụng cho các khách sạn được đánh giá cao và được khách hàng tin tưởng."
             />
 
             {/* Grid danh sách khách sạn */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-16 w-full z-10">
-                {rooms.slice(0, 4).map((room, index) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8 mt-16 w-full z-10">
+                {discountedRooms.slice(0, 5).map((room, index) => (
                     <div
                         key={room._id}
                         className="transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-rose-100/50 rounded-2xl"
@@ -29,6 +35,22 @@ const RecommendedHotels = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Nút xem tất cả phòng giảm giá */}
+            {discountedRooms.length > 5 && (
+                <button
+                    onClick={() => {
+                        navigate('/discounted-rooms')
+                        scrollTo(0, 0)
+                    }}
+                    className="mt-12 px-8 py-3 text-sm font-semibold tracking-wide 
+                        border-2 border-rose-400 rounded-full 
+                        bg-white text-rose-600 hover:bg-rose-500 hover:text-white 
+                        transition-all shadow-sm hover:shadow-lg transform hover:scale-105"
+                >
+                    Xem tất cả phòng giảm giá
+                </button>
+            )}
         </div>
     )
 }
