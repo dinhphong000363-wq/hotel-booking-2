@@ -10,29 +10,43 @@ const GoogleMap = ({ address, isExpanded = false, onExpand }) => {
     useEffect(() => {
         if (!mapRef.current || !address) return;
 
+        let timeoutCount = 0;
+        const maxTimeout = 100; // 10 giây (100 * 100ms) - tăng thời gian chờ
+
         // Kiểm tra Google Maps API đã load chưa
         const checkGoogleMaps = () => {
             if (window.google && window.google.maps) {
+                console.log('Google Maps API ready, initializing map...');
                 setIsLoading(false);
                 initializeMap();
             } else {
-                setTimeout(checkGoogleMaps, 100);
+                timeoutCount++;
+                if (timeoutCount < maxTimeout) {
+                    setTimeout(checkGoogleMaps, 100);
+                } else {
+                    console.error('Google Maps API failed to load after 10 seconds');
+                    setIsLoading(false);
+                    setHasError(true);
+                }
             }
         };
 
         const initializeMap = () => {
             if (!window.google || !window.google.maps) {
+                console.error('Google Maps API not available');
                 setHasError(true);
                 return;
             }
 
+            console.log('Initializing map with address:', address);
+
             // Geocode address to get coordinates
             const geocoder = new window.google.maps.Geocoder();
-            
+
             geocoder.geocode({ address: address }, (results, status) => {
                 if (status === 'OK' && results[0]) {
                     const location = results[0].geometry.location;
-                    
+
                     const mapOptions = {
                         center: location,
                         zoom: isExpanded ? 16 : 14,
@@ -65,7 +79,7 @@ const GoogleMap = ({ address, isExpanded = false, onExpand }) => {
                         title: address,
                         animation: window.google.maps.Animation.DROP
                     });
-                    
+
                     setHasError(false);
                 } else {
                     console.error('Geocoding failed:', status);
@@ -81,9 +95,8 @@ const GoogleMap = ({ address, isExpanded = false, onExpand }) => {
         <div className="relative w-full">
             <div
                 ref={mapRef}
-                className={`w-full bg-gray-200 rounded-xl overflow-hidden transition-all duration-500 ${
-                    isExpanded ? 'h-[600px]' : 'h-[400px]'
-                }`}
+                className={`w-full bg-gray-200 rounded-xl overflow-hidden transition-all duration-500 ${isExpanded ? 'h-[600px]' : 'h-[400px]'
+                    }`}
                 onClick={onExpand}
                 style={{ cursor: onExpand ? 'pointer' : 'default' }}
             >
@@ -95,7 +108,7 @@ const GoogleMap = ({ address, isExpanded = false, onExpand }) => {
                 {hasError && !isLoading && (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500">
                         <p className="mb-2">Không thể tải bản đồ</p>
-                        <a 
+                        <a
                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                             target="_blank"
                             rel="noopener noreferrer"

@@ -180,93 +180,94 @@ const AllRooms = () => {
 
                 {filteredRooms.map((room) => {
                     const hasDiscount = room.discount && room.discount > 0;
-                    const discountedPrice = hasDiscount 
-                        ? room.pricePerNight * (1 - room.discount / 100) 
+                    const discountedPrice = hasDiscount
+                        ? room.pricePerNight * (1 - room.discount / 100)
                         : room.pricePerNight;
-                    
-                    return (
-                    <div
-                        key={room._id}
-                        className="group flex flex-col md:flex-row items-start gap-6 py-10 border-b border-gray-200 last:border-none transition-all duration-300 hover:bg-white/70 hover:shadow-xl rounded-2xl px-4 md:px-6"
-                    >
-                        <div className="md:w-1/2 relative">
-                            <img
-                                onClick={() => {
-                                    navigate(`/rooms/${room._id}`);
-                                    scrollTo(0, 0);
-                                }}
-                                src={room.images[0]}
-                                alt="hotel-img"
-                                title="Xem chi tiết phòng"
-                                className="w-full h-72 object-cover rounded-2xl shadow-md cursor-pointer transform group-hover:scale-[1.02] transition-transform duration-500 ease-out"
-                            />
-                            {hasDiscount && (
-                                <p className="absolute top-3 right-3 px-3 py-1 text-xs bg-rose-500 text-white font-bold rounded-full shadow-lg">
-                                    -{room.discount}%
-                                </p>
-                            )}
-                        </div>
 
-                        <div className="md:w-1/2 flex flex-col justify-between gap-4">
-                            <div>
-                                <p className="text-gray-500 text-sm uppercase tracking-wide">{room.hotel.city}</p>
-                                <h2
+                    return (
+                        <div
+                            key={room._id}
+                            className="group flex flex-col md:flex-row items-start gap-6 py-10 border-b border-gray-200 last:border-none transition-all duration-300 hover:bg-white/70 hover:shadow-xl rounded-2xl px-4 md:px-6"
+                        >
+                            <div className="md:w-1/2 relative">
+                                <img
                                     onClick={() => {
                                         navigate(`/rooms/${room._id}`);
                                         scrollTo(0, 0);
                                     }}
-                                    className="text-gray-900 text-2xl font-playfair cursor-pointer hover:text-indigo-600 transition-colors"
-                                >
-                                    {room.hotel.name}
-                                </h2>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    {translateRoomType(room.roomType)}
-                                </p>
-
-                                <div className="flex items-center mt-1">
-                                    <StaticRating />
-                                    <p className="ml-2 text-gray-500 text-sm">Hơn 200 đánh giá</p>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-gray-500 mt-3 text-sm">
-                                    <img src={assets.locationIcon} alt="location-icon" className="w-4 h-4" />
-                                    <span>{room.hotel.address}</span>
-                                </div>
-                            </div>
-
-                            {/* --- tiện nghi --- */}
-                            <div className="flex flex-wrap items-center mt-4 gap-3">
-                                {room.amenities.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-50/70 hover:bg-indigo-100 transition-all duration-300"
-                                    >
-                                        <img src={facilityIcons[item]} alt={item} className="w-5 h-5" />
-                                        <p className="text-xs text-gray-700">{translateAmenity(item)}</p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* --- giá --- */}
-                            <div className="mt-2">
-                                {hasDiscount ? (
-                                    <div>
-                                        <p className="text-sm text-gray-500 line-through">
-                                            {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} / đêm
-                                        </p>
-                                        <p className="text-xl font-semibold text-rose-600">
-                                            {currency}{Number(discountedPrice).toLocaleString('vi-VN')} <span className="text-sm text-gray-500 font-normal">/ đêm</span>
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="text-xl font-semibold text-indigo-600">
-                                        {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} <span className="text-sm text-gray-500 font-normal">/ đêm</span>
-                                    </div>
+                                    src={room.images[0]}
+                                    alt="hotel-img"
+                                    title="Xem chi tiết phòng"
+                                    className="w-full h-72 object-cover rounded-2xl shadow-md cursor-pointer transform group-hover:scale-[1.02] transition-transform duration-500 ease-out"
+                                />
+                                {room.discount > 0 && (
+                                    <p className="absolute top-3 right-3 px-3 py-1 text-xs bg-rose-500 text-white font-bold rounded-full shadow-lg">
+                                        -{room.discount}%
+                                    </p>
                                 )}
                             </div>
+
+                            <div className="md:w-1/2 flex flex-col justify-between gap-4">
+                                <div>
+                                    <p className="text-gray-500 text-sm uppercase tracking-wide">{room.hotel.city}</p>
+                                    <h2
+                                        onClick={() => {
+                                            navigate(`/rooms/${room._id}`);
+                                            scrollTo(0, 0);
+                                        }}
+                                        className="text-gray-900 text-2xl font-playfair cursor-pointer hover:text-indigo-600 transition-colors"
+                                    >
+                                        {room.hotel.name}
+                                    </h2>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {translateRoomType(room.roomType)}
+                                    </p>
+
+                                    <div className="flex items-center mt-1">
+                                        <StaticRating />
+                                        <p className="ml-2 text-gray-500 text-sm">Hơn 200 đánh giá</p>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 text-gray-500 mt-3 text-sm">
+                                        <img src={assets.locationIcon} alt="location-icon" className="w-4 h-4" />
+                                        <span>{room.hotel.address}</span>
+                                    </div>
+                                </div>
+
+                                {/* --- tiện nghi --- */}
+                                <div className="flex flex-wrap items-center mt-4 gap-3">
+                                    {room.amenities.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-50/70 hover:bg-indigo-100 transition-all duration-300"
+                                        >
+                                            <img src={facilityIcons[item]} alt={item} className="w-5 h-5" />
+                                            <p className="text-xs text-gray-700">{translateAmenity(item)}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* --- giá --- */}
+                                <div className="mt-2">
+                                    {hasDiscount ? (
+                                        <div>
+                                            <p className="text-sm text-gray-500 line-through">
+                                                {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} / đêm
+                                            </p>
+                                            <p className="text-xl font-semibold text-rose-600">
+                                                {currency}{Number(discountedPrice).toLocaleString('vi-VN')} <span className="text-sm text-gray-500 font-normal">/ đêm</span>
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="text-xl font-semibold text-indigo-600">
+                                            {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} <span className="text-sm text-gray-500 font-normal">/ đêm</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                )})}
+                    )
+                })}
             </div>
 
             {/* --- BỘ LỌC --- */}
@@ -279,7 +280,7 @@ const AllRooms = () => {
                         <span onClick={() => setOpenFilters(!openFilters)} className="lg:hidden">
                             {openFilters ? 'Ẩn' : 'Hiện'}
                         </span>
-                        <span 
+                        <span
                             onClick={clearFilters}
                             className="hidden lg:block hover:underline"
                         >

@@ -1,18 +1,18 @@
 import React from 'react'
-import { useAppContext } from '../conext/AppContext'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 const Loader = () => {
-    const { navigate } = useAppContext()
+    const navigate = useNavigate()
     const { nextUrl } = useParams()
 
     useEffect(() => {
         if (nextUrl) {
+            // Giảm thời gian chờ xuống 2 giây
             setTimeout(() => {
-                navigate(`/${nextUrl}`)
-            }, 8000)
+                navigate(`/${nextUrl}`, { replace: true })
+            }, 2000)
         }
-    }, [nextUrl])
+    }, [nextUrl, navigate])
     return (
         <div className='flex justify-center items-center h-screen'>
             <div className='animate-spin rounded-full h-24 w-24 border-4

@@ -1,10 +1,13 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react'
+﻿import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { assets, facilityIcons, roomCommonData } from '../assets/assets'
 import { useAppContext } from '../conext/AppContext'
 import { translateAmenity, translateRoomType } from '../utils/translations'
 import toast from 'react-hot-toast'
-import GoogleMap from '../components/GoogleMap'
+import MapWithSearch from '../components/MapWithSearch'
+import MapModal from '../components/MapModal'
+import HotelContact from '../components/HotelContact'
+import RelatedRooms from '../components/RelatedRooms'
 
 const StaticRating = () => (
     <div className="flex">
@@ -345,7 +348,7 @@ const RoomsTails = () => {
                 {/* Room Address */}
                 <div className="flex items-center gap-2 text-gray-500 mt-2">
                     <img src={assets.locationIcon} alt="location-icon" className="w-4 h-4" />
-                    <span 
+                    <span
                         className="cursor-pointer hover:text-indigo-600 transition-colors"
                         onClick={() => {
                             if (mapSectionRef.current) {
@@ -657,16 +660,15 @@ const RoomsTails = () => {
                         Bạn sẽ có một căn hộ hai phòng ngủ thoải mái mang đậm phong cách thành phố.</p>
                 </div>
 
-                {/* Google Map Section */}
+                {/* Map Section */}
                 <div ref={mapSectionRef} className="mt-16">
                     <h2 className="text-2xl font-semibold text-gray-800 mb-6">Vị trí</h2>
                     <div className="relative">
-                        <GoogleMap 
+                        <MapWithSearch
                             address={room.hotel.fullAddress || room.hotel.address}
                             isExpanded={mapExpanded}
-                            onExpand={() => setShowMapModal(true)}
                         />
-                        <div className="absolute bottom-4 right-4 flex gap-2 z-10">
+                        <div className="absolute bottom-4 right-4 flex gap-2 z-[1000]">
                             <button
                                 onClick={() => setShowMapModal(true)}
                                 className="px-4 py-2 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm font-medium text-gray-700"
@@ -691,82 +693,22 @@ const RoomsTails = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* contact */}
-                <div className="flex flex-col items-start gap-4">
-                    <div className="flex gap-4">
-                        <img
-                            src={room.hotel.owner.image}
-                            alt="Host"
-                            className="h-14 w-14 md:h-18 md:w-18 rounded-full"
-                        />
-                        <div>
-                            <p className="text-lg md:text-xl">
-                                Chủ nhà: {room.hotel.name}
-                            </p>
-                            <div className="flex items-center mt-1">
-                                <StaticRating />
-                                <p className="ml-2">Hơn 200 đánh giá</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button
-                        className="px-4 py-2.5 mt-4 rounded text-white bg-primary hover:bg-primary-dull transition-all cursor-pointer"
-                    >
-                        Liên hệ ngay
-                    </button>
-                </div>
             </div>
 
-            {/* Map Modal */}
-            {showMapModal && (
-                <div 
-                    className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
-                    onClick={() => setShowMapModal(false)}
-                >
-                    <div 
-                        className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h3 className="text-xl font-semibold text-gray-800">Bản đồ</h3>
-                            <button
-                                onClick={() => setShowMapModal(false)}
-                                className="text-gray-500 hover:text-gray-700 text-2xl"
-                            >
-                                ×
-                            </button>
-                        </div>
-                        <div className="p-4">
-                            <GoogleMap 
-                                address={room.hotel.fullAddress || room.hotel.address}
-                                isExpanded={true}
-                            />
-                        </div>
-                        <div className="p-4 border-t flex justify-end gap-3">
-                            <button
-                                onClick={() => {
-                                    const address = encodeURIComponent(room.hotel.fullAddress || room.hotel.address);
-                                    window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
-                                }}
-                                className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-all flex items-center gap-2"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                </svg>
-                                Mở Google Maps
-                            </button>
-                            <button
-                                onClick={() => setShowMapModal(false)}
-                                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
-                            >
-                                Đóng
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <HotelContact hotel={room.hotel} />
+
+            <RelatedRooms
+                rooms={rooms}
+                currentRoomId={id}
+                navigate={navigate}
+                currency={currency}
+            />
+
+            <MapModal
+                isOpen={showMapModal}
+                onClose={() => setShowMapModal(false)}
+                address={room.hotel.fullAddress || room.hotel.address}
+            />
         </>
     )
 }

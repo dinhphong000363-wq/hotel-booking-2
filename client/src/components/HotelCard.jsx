@@ -7,10 +7,10 @@ import { useAppContext } from '../conext/AppContext';
 const HotelCard = ({ room, index }) => {
     const { currency } = useAppContext();
     const hasDiscount = room.discount && room.discount > 0;
-    const discountedPrice = hasDiscount 
-        ? room.pricePerNight * (1 - room.discount / 100) 
+    const discountedPrice = hasDiscount
+        ? room.pricePerNight * (1 - room.discount / 100)
         : room.pricePerNight;
-    
+
     return (
         <Link to={`/rooms/${room._id}`} onClick={() => scrollTo(0, 0)}
             className="relative max-w-70 w-full rounded-xl overflow-hidden bg-white text-gray-500/90 shadow-[0px_4px_4px_rgba(0,0,0,0.05)]"
@@ -28,7 +28,7 @@ const HotelCard = ({ room, index }) => {
                 </p>
             )}
 
-            {index % 2 === 0 && !hasDiscount && (
+            {!hasDiscount && index % 2 === 0 && (
                 <p className="px-3 py-1 absolute top-3 left-3 text-xs bg-white text-gray-800 font-medium rounded-full">
                     Bán chạy
                 </p>
