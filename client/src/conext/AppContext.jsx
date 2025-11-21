@@ -21,16 +21,16 @@ export const AppProvider = ({ children }) => {
     const [searchedCities, setSearchedCities] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [hotelStatusUpdated, setHotelStatusUpdated] = useState(0); // Counter to trigger refresh
-    
-    const fetchRooms = async()=>{
+
+    const fetchRooms = async () => {
         try {
-            const {data} = await axios.get('/api/rooms')
-            if(data.success){
+            const { data } = await axios.get('/api/rooms')
+            if (data.success) {
                 setRooms(data.rooms)
-            }else{
+            } else {
                 toast.error(data.message)
             }
-        } catch (error) {   
+        } catch (error) {
             toast.error(error.message || 'Có lỗi xảy ra khi tải danh sách phòng')
         }
     }
@@ -50,9 +50,9 @@ export const AppProvider = ({ children }) => {
                 setIsAdmin(data.role === "admin");
                 setSearchedCities(data.recentSearchedCities || []);
             } else {
-                setTimeout(()=>{
+                setTimeout(() => {
                     fetUser()
-                },5000)
+                }, 5000)
             }
         } catch (error) {
             toast.error(error.message || 'Có lỗi xảy ra khi tải thông tin người dùng');
@@ -60,14 +60,14 @@ export const AppProvider = ({ children }) => {
     };
 
     useEffect(() => {
-       if(user){
-        fetUser()
-       }
+        if (user) {
+            fetUser()
+        }
     }, [user]);
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchRooms()
-    },[])
+    }, [])
     const value = {
         currency,
         navigate,
