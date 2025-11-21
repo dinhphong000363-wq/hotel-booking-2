@@ -21,37 +21,62 @@ const clerkWebhooks = async (req, res) => {
 
         switch (type) {
             case "user.created": {
-                const userData = {
-                    _id: data.id,
-                    email: data.email_addresses[0].email_address,
-                    username: `${data.first_name} ${data.last_name}`,
-                    image: data.image_url,
-                };
-                await User.create(userData);
+                try {
+                    const userData = {
+                        _id: data.id,
+                        email: data.email_addresses[0].email_address,
+                        username: `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.email_addresses[0].email_address.split('@')[0],
+                        image: data.image_url || 'https://via.placeholder.com/150',
+                    };
+
+                    // Check if user already exists
+                    const existingUser = await User.findById(data.id);
+                    if (existingUser) {
+                        console.log('⚠️ User already exists, updating instead:', userData.email);
+                        await User.findByIdAndUpdate(data.id, userData);
+                    } else {
+                        await User.create(userData);
+                        console.log('✅ User created:', userData.email);
+                    }
+                } catch (err) {
+                    console.error('❌ Error creating user:', err.message);
+                }
                 break;
             }
             case "user.updated": {
-                const userData = {
-                    _id: data.id,
-                    email: data.email_addresses[0].email_address,
-                    username: `${data.first_name} ${data.last_name}`,
-                    image: data.image_url,
-                };
-                await User.findByIdAndUpdate(data.id, userData);
+                try {
+                    const userData = {
+                        email: data.email_addresses[0].email_address,
+                        username: `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.email_addresses[0].email_address.split('@')[0],
+                        image: data.image_url || 'https://via.placeholder.com/150',
+                    };
+                    await User.findByIdAndUpdate(data.id, userData);
+                    console.log('✅ User updated:', userData.email);
+                } catch (err) {
+                    console.error('❌ Error updating user:', err.message);
+                }
                 break;
             }
             case "user.deleted": {
-                await User.findByIdAndDelete(data.id);
+                try {
+                    await User.findByIdAndDelete(data.id);
+                    console.log('✅ User deleted:', data.id);
+                } catch (err) {
+                    console.error('❌ Error deleting user:', err.message);
+                }
                 break;
             }
             default:
+                console.log('⚠️ Unhandled webhook type:', type);
                 break;
         }
 
-        res.json({ success: true, message: "Webhook Received" });
+        res.status(200).json({ success: true, message: "Webhook Received" });
     } catch (error) {
-        console.log("❌ Clerk webhook error:", error.message);
-        res.json({ success: false, message: error.message });
+        console.error("❌ Clerk webhook error:", error.message);
+        console.error("Error details:", error);
+        // Always return 200 to prevent Clerk from retrying
+        res.status(200).json({ success: false, message: error.message });
     }
 };
 

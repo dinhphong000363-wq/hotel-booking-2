@@ -164,7 +164,7 @@ const Navbar = () => {
                             </button>
                         ) : hotelStatus === 'pending' ? (
                             <button
-                                onClick={() => setShowHotelReg(true)}
+                                onClick={() => navigate('/hotel-status')}
                                 className={`flex items-center gap-2 px-4 py-1 text-sm font-medium rounded-full ${isScrolled ? "bg-yellow-100 text-yellow-800 border border-yellow-300" : "bg-yellow-200/90 text-yellow-900 border border-yellow-400"
                                     } transition-all hover:opacity-80 cursor-pointer`}>
                                 <svg className="h-4 w-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,7 +301,7 @@ const Navbar = () => {
                             </button>
                         ) : hotelStatus === 'pending' ? (
                             <button
-                                onClick={() => setShowHotelReg(true)}
+                                onClick={() => navigate('/hotel-status')}
                                 className="flex items-center gap-2 px-4 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800 border border-yellow-300 transition-all hover:opacity-80 cursor-pointer"
                             >
                                 <svg className="h-4 w-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">

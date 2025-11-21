@@ -14,6 +14,7 @@ import reviewRouter from "./routes/reviewRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import ownerRouter from "./routes/ownerRoutes.js";
 import { stripeWebhooks } from "./controllers/stripeWebhook.js";
+import chatbotRouter from "./routes/chatbotRoutes.js";
 
 connectDB()
 connectCloudinary()
@@ -46,6 +47,7 @@ app.use("/api/favorites", favoriteRouter)
 app.use("/api/reviews", reviewRouter)
 app.use("/api/admin", adminRouter)
 app.use("/api/owner", ownerRouter)
+app.use("/api/chatbot", chatbotRouter)
 
 
 

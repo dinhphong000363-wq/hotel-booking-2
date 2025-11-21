@@ -22,6 +22,8 @@ import { useAppContext } from './conext/AppContext'
 import Loader from './components/Loader'
 import Favorites from './pages/Favorites'
 import DiscountedRooms from './pages/DiscountedRooms'
+import Chatbot from './components/Chatbot'
+import HotelStatus from './pages/HotelStatus'
 
 const App = () => {
   const location = useLocation()
@@ -33,6 +35,7 @@ const App = () => {
       <Toaster />
       {!isOwnerPath && !isAdminPath && <Navbar />}
       {showHotelReg && < HotelReg />}
+      {!isOwnerPath && !isAdminPath && <Chatbot />}
       <div className="min-h-[70vh]">
         <Routes>
           <Route path='/' element={<Home />} />
@@ -41,6 +44,7 @@ const App = () => {
           <Route path='/discounted-rooms' element={<DiscountedRooms />} />
           <Route path='/my-bookings' element={<MyBookings />} />
           <Route path='/favorites' element={<Favorites />} />
+          <Route path='/hotel-status' element={<HotelStatus />} />
           <Route path='/loader/:nextUrl' element={<Loader />} />
           <Route path='/owner' element={<Layout />}>
             <Route index element={<Dashboard />} />
