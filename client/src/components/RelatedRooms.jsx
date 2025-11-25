@@ -102,7 +102,7 @@ const RelatedRooms = ({ rooms, currentRoomId, navigate, currency }) => {
                             <div className="relative">
                                 <img
                                     src={otherRoom.images[0]}
-                                    alt={otherRoom.hotel.name}
+                                    alt={otherRoom.hotel?.name || 'Hotel room'}
                                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                                 {hasDiscount && (
@@ -114,10 +114,10 @@ const RelatedRooms = ({ rooms, currentRoomId, navigate, currency }) => {
 
                             <div className="p-4">
                                 <p className="text-xs text-gray-500 uppercase tracking-wide">
-                                    {otherRoom.hotel.city}
+                                    {otherRoom.hotel?.city || 'N/A'}
                                 </p>
                                 <h3 className="text-lg font-semibold text-gray-800 mt-1 line-clamp-1">
-                                    {otherRoom.hotel.name}
+                                    {otherRoom.hotel?.name || 'Khách sạn'}
                                 </h3>
                                 <p className="text-sm text-gray-500 mt-1">
                                     {translateRoomType(otherRoom.roomType)}
@@ -129,7 +129,7 @@ const RelatedRooms = ({ rooms, currentRoomId, navigate, currency }) => {
 
                                 <div className="flex items-center gap-2 text-gray-500 mt-2 text-xs">
                                     <img src={assets.locationIcon} alt="location" className="w-3 h-3" />
-                                    <span className="line-clamp-1">{otherRoom.hotel.address}</span>
+                                    <span className="line-clamp-1">{otherRoom.hotel?.address || 'Địa chỉ không có sẵn'}</span>
                                 </div>
 
                                 <div className="mt-3 pt-3 border-t border-gray-200">

@@ -132,9 +132,9 @@ const AllRooms = () => {
         const destination = searchParams.get('destination');
         if (!destination) return true;
 
-        return room.hotel.city
-            .toLowerCase()
-            .includes(destination.toLowerCase());
+        return room.hotel?.city
+            ?.toLowerCase()
+            ?.includes(destination.toLowerCase()) || false;
     };
 
     // Lọc và sắp xếp phòng dựa trên bộ lọc đã chọn và tùy chọn sắp xếp
@@ -209,7 +209,7 @@ const AllRooms = () => {
 
                             <div className="md:w-1/2 flex flex-col justify-between gap-4">
                                 <div>
-                                    <p className="text-gray-500 text-sm uppercase tracking-wide">{room.hotel.city}</p>
+                                    <p className="text-gray-500 text-sm uppercase tracking-wide">{room.hotel?.city || 'N/A'}</p>
                                     <h2
                                         onClick={() => {
                                             navigate(`/rooms/${room._id}`);
@@ -217,7 +217,7 @@ const AllRooms = () => {
                                         }}
                                         className="text-gray-900 text-2xl font-playfair cursor-pointer hover:text-indigo-600 transition-colors"
                                     >
-                                        {room.hotel.name}
+                                        {room.hotel?.name || 'Khách sạn'}
                                     </h2>
                                     <p className="text-sm text-gray-500 mt-1">
                                         {translateRoomType(room.roomType)}
@@ -230,7 +230,7 @@ const AllRooms = () => {
 
                                     <div className="flex items-center gap-2 text-gray-500 mt-3 text-sm">
                                         <img src={assets.locationIcon} alt="location-icon" className="w-4 h-4" />
-                                        <span>{room.hotel.address}</span>
+                                        <span>{room.hotel?.address || 'Địa chỉ không có sẵn'}</span>
                                     </div>
                                 </div>
 

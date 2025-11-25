@@ -3,18 +3,38 @@ import User from "../models/User.js";
 // Middleware to check if user is authenticated
 export const protect = async (req, res, next) => {
   try {
-    const { userId } = req.auth || {};
+    // ✅ Fix deprecated req.auth - use as function
+    const auth = req.auth();
+    const { userId } = auth || {};
 
     if (!userId) {
       return res.json({ success: false, message: "Not authenticated" });
     }
 
     // Find user in DB by Clerk ID
-    const user = await User.findById(userId);
+    let user = await User.findById(userId);
 
+    // ✅ Auto-create user if not found (fallback for webhook issues)
     if (!user) {
       console.log("⚠️ User not found in database for ID:", userId);
-      return res.json({ success: false, message: "User not found" });
+      console.log("🔄 Creating placeholder user - please sync via /api/user/sync");
+
+      try {
+        // Create a basic user entry
+        user = await User.create({
+          _id: userId,
+          email: `${userId}@placeholder.com`,
+          username: `User_${userId.slice(-8)}`,
+          image: 'https://via.placeholder.com/150',
+        });
+        console.log("✅ Placeholder user created. User should call /api/user/sync to update details.");
+      } catch (createError) {
+        console.error("❌ Error auto-creating user:", createError);
+        return res.json({
+          success: false,
+          message: "User not found. Please sync your account at /api/user/sync"
+        });
+      }
     }
 
     req.user = user;

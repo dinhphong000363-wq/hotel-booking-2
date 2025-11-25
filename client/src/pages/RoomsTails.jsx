@@ -281,7 +281,7 @@ const RoomsTails = () => {
                 {/* Room Details */}
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
                     <h1 className="text-3xl md:text-4xl font-playfair">
-                        {room.hotel.name}{' '}
+                        {room.hotel?.name || 'Khách sạn'}{' '}
                         <span className="font-inter text-sm">
                             ({translateRoomType(room.roomType)})
                         </span>
@@ -359,12 +359,14 @@ const RoomsTails = () => {
                             }
                         }}
                     >
-                        {room.hotel.fullAddress || room.hotel.address}
+                        {room.hotel?.fullAddress || room.hotel?.address || 'Địa chỉ không có sẵn'}
                     </span>
                     <button
                         onClick={() => {
-                            const address = encodeURIComponent(room.hotel.fullAddress || room.hotel.address);
-                            window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
+                            const address = encodeURIComponent(room.hotel?.fullAddress || room.hotel?.address || '');
+                            if (address) {
+                                window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
+                            }
                         }}
                         className="ml-2 px-3 py-1 text-xs bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-all flex items-center gap-1"
                         title="Mở Google Maps"
@@ -665,7 +667,7 @@ const RoomsTails = () => {
                     <h2 className="text-2xl font-semibold text-gray-800 mb-6">Vị trí</h2>
                     <div className="relative">
                         <MapWithSearch
-                            address={room.hotel.fullAddress || room.hotel.address}
+                            address={room.hotel?.fullAddress || room.hotel?.address || 'Địa chỉ không có sẵn'}
                             isExpanded={mapExpanded}
                         />
                         <div className="absolute bottom-4 right-4 flex gap-2 z-[1000]">
@@ -680,8 +682,10 @@ const RoomsTails = () => {
                             </button>
                             <button
                                 onClick={() => {
-                                    const address = encodeURIComponent(room.hotel.fullAddress || room.hotel.address);
-                                    window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
+                                    const address = encodeURIComponent(room.hotel?.fullAddress || room.hotel?.address || '');
+                                    if (address) {
+                                        window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, '_blank');
+                                    }
                                 }}
                                 className="px-4 py-2 bg-indigo-500 text-white rounded-lg shadow-lg hover:bg-indigo-600 transition-all flex items-center gap-2 text-sm font-medium"
                             >
@@ -707,7 +711,7 @@ const RoomsTails = () => {
             <MapModal
                 isOpen={showMapModal}
                 onClose={() => setShowMapModal(false)}
-                address={room.hotel.fullAddress || room.hotel.address}
+                address={room.hotel?.fullAddress || room.hotel?.address || 'Địa chỉ không có sẵn'}
             />
         </>
     )

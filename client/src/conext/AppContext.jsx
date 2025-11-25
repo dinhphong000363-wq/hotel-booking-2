@@ -35,6 +35,24 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const syncUser = async () => {
+        try {
+            const token = await getToken();
+            if (!token || !user) return;
+
+            // Sync user data to database
+            await axios.post('/api/user/sync', {
+                email: user.primaryEmailAddress?.emailAddress,
+                username: user.fullName || user.username || user.primaryEmailAddress?.emailAddress?.split('@')[0],
+                image: user.imageUrl
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        } catch (error) {
+            console.error('Sync user error:', error);
+        }
+    };
+
     const fetUser = async () => {
         try {
             const token = await getToken();
@@ -50,9 +68,12 @@ export const AppProvider = ({ children }) => {
                 setIsAdmin(data.role === "admin");
                 setSearchedCities(data.recentSearchedCities || []);
             } else {
+                // If user not found, sync and retry
+                console.log('User not found, syncing...');
+                await syncUser();
                 setTimeout(() => {
                     fetUser()
-                }, 5000)
+                }, 2000)
             }
         } catch (error) {
             toast.error(error.message || 'Có lỗi xảy ra khi tải thông tin người dùng');
@@ -61,7 +82,10 @@ export const AppProvider = ({ children }) => {
 
     useEffect(() => {
         if (user) {
-            fetUser()
+            // Sync user first, then fetch
+            syncUser().then(() => {
+                fetUser()
+            });
         }
     }, [user]);
 

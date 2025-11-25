@@ -3,6 +3,8 @@ import { Webhook } from "svix";
 
 const clerkWebhooks = async (req, res) => {
     try {
+        console.log("📥 Webhook received - Type:", req.body?.type);
+
         const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
         const headers = {
@@ -16,6 +18,7 @@ const clerkWebhooks = async (req, res) => {
 
         // ✅ Extract data
         const { data, type } = req.body;
+        console.log("✅ Webhook verified - Processing:", type);
 
 
 
