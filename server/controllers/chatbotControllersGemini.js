@@ -25,7 +25,7 @@ const getHotelContext = async () => {
             context += '📍 CÁC KHÁCH SẠN:\n'
             hotels.forEach(hotel => {
                 context += `- ${hotel.name}\n`
-                context += `  Địa chỉ: ${hotel.address || 'N/A'}, ${hotel.city || 'N/A'}\n`
+                context += `  Địa chỉ: ${hotel.address || 'Chưa cập nhật'}, ${hotel.city || 'Chưa rõ'}\n`
                 context += `  Trạng thái: ${hotel.isApproved ? 'Đã duyệt' : 'Chờ duyệt'}\n`
                 if (hotel.amenities?.length > 0) {
                     context += `  Tiện ích: ${hotel.amenities.join(', ')}\n`
@@ -41,8 +41,8 @@ const getHotelContext = async () => {
             context += '🏨 CÁC PHÒNG:\n'
             rooms.forEach(room => {
                 context += `- ${room.name} (${room.hotel?.name || 'Khách sạn'})\n`
-                context += `  💰 Giá: ${room.price?.toLocaleString('vi-VN') || 'N/A'}đ/đêm\n`
-                context += `  👥 Sức chứa: ${room.capacity || 'N/A'} người\n`
+                context += `  💰 Giá: $${room.price?.toLocaleString('vi-VN') || 'Chưa cập nhật'}/đêm\n`
+                context += `  👥 Sức chứa: ${room.capacity || 'Chưa rõ'} người\n`
                 context += `  🛏️ Giường: ${room.bedType || 'Không xác định'}\n`
                 context += `  📍 Trạng thái: ${room.isAvailable ? 'Còn phòng' : 'Hết phòng'}\n`
                 if (room.amenities?.length > 0) {
@@ -50,7 +50,7 @@ const getHotelContext = async () => {
                 }
                 if (room.discount > 0) {
                     const discountedPrice = room.price * (1 - room.discount / 100)
-                    context += `  🎉 GIẢM GIÁ ${room.discount}%: ${discountedPrice.toLocaleString('vi-VN')}đ\n`
+                    context += `  🎉 GIẢM GIÁ ${room.discount}%: $${discountedPrice.toLocaleString('vi-VN')}\n`
                 }
             })
             context += '\n'
@@ -117,7 +117,8 @@ TRỢ LÝ:`
         const response = await result.response
         return response.text()
     } catch (error) {
-        console.error('Gemini API Error:', error)
+        // KHÔNG log toàn bộ error object để tránh leak API key
+        console.error('Gemini API Error:', error.message || 'Unknown error')
 
         // Fallback to basic response if Gemini fails
         if (error.message?.includes('API key')) {
@@ -140,7 +141,8 @@ export const handleChatMessage = async (req, res) => {
 
         res.json({ reply })
     } catch (error) {
-        console.error('Chatbot error:', error)
+        // KHÔNG log toàn bộ error để tránh leak thông tin nhạy cảm
+        console.error('Chatbot error:', error.message || 'Unknown error')
         res.status(500).json({
             error: 'Internal server error',
             reply: 'Xin lỗi, tôi gặp sự cố. Vui lòng thử lại sau hoặc liên hệ với bộ phận hỗ trợ.'

@@ -43,28 +43,57 @@ const MapWithSearch = ({ address, isExpanded = false }) => {
                 setLoading(true);
                 setError(false);
 
-                const response = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
-                    {
-                        headers: {
-                            'User-Agent': 'HotelBookingApp/1.0' // Nominatim yêu cầu User-Agent
+                // Thử nhiều cách tìm kiếm
+                const searchQueries = [
+                    address, // Địa chỉ đầy đủ
+                    `${address}, Vietnam`, // Thêm Vietnam
+                    address.split(',').slice(-2).join(',').trim() + ', Vietnam', // Chỉ lấy quận/thành phố
+                ];
+
+                let found = false;
+
+                for (const query of searchQueries) {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=vn`,
+                        {
+                            headers: {
+                                'User-Agent': 'HotelBookingApp/1.0'
+                            }
                         }
+                    );
+
+                    const data = await response.json();
+
+                    if (data && data.length > 0) {
+                        const { lat, lon } = data[0];
+                        setCoordinates([parseFloat(lat), parseFloat(lon)]);
+                        setError(false);
+                        found = true;
+                        break;
                     }
-                );
 
-                const data = await response.json();
+                    // Đợi 1 giây giữa các request để tránh rate limit
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
 
-                if (data && data.length > 0) {
-                    const { lat, lon } = data[0];
-                    setCoordinates([parseFloat(lat), parseFloat(lon)]);
-                    setError(false);
-                } else {
-                    console.error('Không tìm thấy tọa độ cho địa chỉ:', address);
-                    setError(true);
+                if (!found) {
+                    console.warn('Không tìm thấy tọa độ, sử dụng vị trí mặc định');
+                    // Sử dụng tọa độ mặc định của thành phố trong địa chỉ
+                    if (address.includes('Đà Nẵng')) {
+                        setCoordinates([16.0544, 108.2022]); // Đà Nẵng
+                    } else if (address.includes('Hà Nội')) {
+                        setCoordinates([21.0285, 105.8542]); // Hà Nội
+                    } else if (address.includes('Hồ Chí Minh') || address.includes('Sài Gòn')) {
+                        setCoordinates([10.8231, 106.6297]); // TP.HCM
+                    } else {
+                        setCoordinates(defaultCenter); // Mặc định Đà Nẵng
+                    }
+                    setError(false); // Không hiển thị lỗi, chỉ dùng vị trí gần đúng
                 }
             } catch (err) {
                 console.error('Lỗi khi geocode địa chỉ:', err);
-                setError(true);
+                setCoordinates(defaultCenter);
+                setError(false); // Không hiển thị lỗi, dùng vị trí mặc định
             } finally {
                 setLoading(false);
             }

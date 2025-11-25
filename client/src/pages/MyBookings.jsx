@@ -5,6 +5,7 @@ import { useAppContext } from '../conext/AppContext';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
 import { translateRoomType, translatePaymentStatus, translatePaymentMethod, translateBookingStatus } from '../utils/translations';
+import Footer from '../components/Footer';
 
 const MyBookings = () => {
     const { axios, getToken, user, currency } = useAppContext();
@@ -247,6 +248,8 @@ const MyBookings = () => {
                 loading={deleting}
                 highlightText={deleteConfirm?.hotelName}
             />
+
+            <Footer />
         </div>
     );
 };
