@@ -35,14 +35,21 @@ const MyBookings = () => {
     };
     const handlePayment = async (bookingId) => {
         try {
-            const { data } = await axios.post('api/bookings/stripe-payment', { bookingId },
+            console.log('🔄 Initiating payment for booking:', bookingId);
+            const { data } = await axios.post('/api/bookings/stripe-payment', { bookingId },
                 { headers: { Authorization: `Bearer ${await getToken()}` } })
+
+            console.log('💳 Payment response:', data);
+
             if (data.success) {
+                console.log('✅ Redirecting to Stripe checkout:', data.url);
                 window.location.href = data.url
             } else {
+                console.error('❌ Payment failed:', data.message);
                 toast.error(data.message)
             }
         } catch (error) {
+            console.error('❌ Payment error:', error);
             toast.error(error.message || 'Có lỗi xảy ra khi xử lý thanh toán')
         }
     }
@@ -89,24 +96,32 @@ const MyBookings = () => {
 
     useEffect(() => {
         if (user) {
+            console.log('🔄 Fetching user bookings...');
             fetchUserBookings();
         }
     }, [user]);
 
-    // Fetch lại data mỗi khi component mount (khi quay lại từ thanh toán)
-    useEffect(() => {
-        if (user) {
-            fetchUserBookings();
-        }
-    }, []);
+
 
     return (
         <div className="py-28 md:pb-35 md:pt-32 px-4 md:px-16 lg:px-24 xl:px-32">
-            <Title
-                title="Đặt phòng của tôi"
-                subTitle="Dễ dàng quản lý các đặt phòng khách sạn trước đây, hiện tại và sắp tới của bạn tại một nơi. Lên kế hoạch cho chuyến đi của bạn một cách liền mạch chỉ với vài cú nhấp chuột."
-                align="left"
-            />
+            <div className="flex justify-between items-start">
+                <Title
+                    title="Đặt phòng của tôi"
+                    subTitle="Dễ dàng quản lý các đặt phòng khách sạn trước đây, hiện tại và sắp tới của bạn tại một nơi. Lên kế hoạch cho chuyến đi của bạn một cách liền mạch chỉ với vài cú nhấp chuột."
+                    align="left"
+                />
+                <button
+                    onClick={fetchUserBookings}
+                    disabled={loading}
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                    <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Làm mới
+                </button>
+            </div>
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">

@@ -22,13 +22,23 @@ connectCloudinary()
 const app = express();
 app.use(cors()); // ✅ gọi đúng hàm
 
-// API to listen to Stripe Webhooks
+// ⚠️ IMPORTANT: Stripe webhook MUST come BEFORE express.json()
+// Stripe needs raw body for signature verification
 app.post(
   '/api/stripe',
   express.raw({ type: "application/json" }),
   stripeWebhooks
 );
 
+// Health check endpoint for webhook
+app.get('/api/stripe/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    webhookConfigured: !!process.env.STRIPE_WEBHOOK_SECRET,
+    stripeKeyConfigured: !!process.env.STRIPE_SECRET_KEY,
+    endpoint: '/api/stripe'
+  });
+});
 
 // clerk middleware
 app.use(express.json())
