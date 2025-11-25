@@ -118,7 +118,7 @@ const Navbar = () => {
                 }`}
         >
             {/* Logo */}
-            <Link to="/">
+            <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <img
                     src={assets.bookingIcon}
                     alt="logo"
@@ -132,6 +132,7 @@ const Navbar = () => {
                     <Link
                         key={i}
                         to={link.path}
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                         className={`group flex flex-col gap-0.5 ${isScrolled ? "text-gray-700" : "text-white"
                             }`}
                     >
@@ -276,7 +277,10 @@ const Navbar = () => {
                     <Link
                         key={i}
                         to={link.path}
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => {
+                            setIsMenuOpen(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                     >
                         {link.name}
                     </Link>
