@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { useAuth } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
 import { translateAmenity, translateRoomType } from '../utils/translations'
+import { isAuthenticated, getAuthHeaders } from '../utils/authUtils'
 
 const Favorites = () => {
-  const { isSignedIn, getToken } = useAuth()
   const [loading, setLoading] = useState(true)
   const [favorites, setFavorites] = useState([])
   const [error, setError] = useState('')
@@ -15,14 +14,13 @@ const Favorites = () => {
       try {
         setLoading(true)
         setError('')
-        if (!isSignedIn) {
+        if (!isAuthenticated()) {
           setFavorites([])
           setLoading(false)
           return
         }
-        const token = await getToken()
-        const { data } = await axios.get('/api/favorites/me', {
-          headers: { Authorization: `Bearer ${token}` }
+        const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/favorites/me`, {
+          headers: getAuthHeaders()
         })
         setFavorites(data?.favorites || [])
       } catch (e) {
@@ -32,7 +30,7 @@ const Favorites = () => {
       }
     }
     fetchFavorites()
-  }, [isSignedIn, getToken])
+  }, [])
 
   if (loading) {
     return (
@@ -43,7 +41,7 @@ const Favorites = () => {
     )
   }
 
-  if (!isSignedIn) {
+  if (!isAuthenticated()) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-semibold mb-4">Danh sách phòng yêu thích</h1>

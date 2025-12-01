@@ -5,14 +5,15 @@ import { Outlet } from 'react-router-dom'
 import { useAppContext } from '../../conext/AppContext'
 
 const Layout = () => {
-    const {isAdmin, navigate} = useAppContext();
+    const { isAdmin, navigate, user } = useAppContext();
 
-    useEffect(()=>{
-        if(!isAdmin){
+    useEffect(() => {
+        // Only redirect if user is loaded and is not admin
+        if (user && !isAdmin) {
             navigate('/')
         }
-    },[isAdmin, navigate])
-    
+    }, [isAdmin, navigate, user])
+
     return (
         <div className='flex flex-col h-screen'>
             <Navbar />

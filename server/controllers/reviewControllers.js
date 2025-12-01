@@ -15,7 +15,7 @@ export const getRoomReviews = async (req, res) => {
 
     const reviews = await Review.find({ room: roomId })
       .sort({ createdAt: -1 })
-      .populate("user", "username image");
+      .populate("user", "username avatar");
 
     res.json({
       success: true,
@@ -82,7 +82,7 @@ export const createOrUpdateReview = async (req, res) => {
 
     const reviews = await Review.find({ room: roomId })
       .sort({ createdAt: -1 })
-      .populate("user", "username image");
+      .populate("user", "username avatar");
 
     res.json({
       success: true,

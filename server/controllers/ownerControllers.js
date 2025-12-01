@@ -24,7 +24,7 @@ export const getOwnerDashboardStats = async (req, res) => {
     // Total counts
     const totalBookings = allBookings.length;
     const totalRooms = await Room.countDocuments({ hotel: { $in: hotelIds } });
-    
+
     // Revenue calculations (only paid bookings)
     const paidBookings = allBookings.filter(b => b.isPaid);
     const totalRevenue = paidBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
@@ -35,14 +35,14 @@ export const getOwnerDashboardStats = async (req, res) => {
     for (let i = 5; i >= 0; i--) {
       const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
-      
+
       const monthBookings = paidBookings.filter(booking => {
         const bookingDate = new Date(booking.createdAt);
         return bookingDate >= monthStart && bookingDate <= monthEnd;
       });
-      
+
       const monthRevenue = monthBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
-      
+
       revenueByMonth.push({
         month: monthStart.toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' }),
         revenue: monthRevenue,
@@ -68,7 +68,7 @@ export const getOwnerDashboardStats = async (req, res) => {
     const currentMonthRevenue = currentMonthBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
     const previousMonthRevenue = previousMonthBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
 
-    const revenueGrowth = previousMonthRevenue > 0 
+    const revenueGrowth = previousMonthRevenue > 0
       ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue * 100).toFixed(1)
       : currentMonthRevenue > 0 ? 100 : 0;
 
@@ -86,7 +86,7 @@ export const getOwnerDashboardStats = async (req, res) => {
 
     // Get reviews for owner's rooms
     const reviews = await Review.find({ room: { $in: roomIdStrings } })
-      .populate("user", "username image")
+      .populate("user", "username avatar")
       .populate("room", "roomType")
       .sort({ createdAt: -1 })
       .limit(10);
@@ -144,7 +144,7 @@ export const getOwnerReviews = async (req, res) => {
     const roomIdStrings = roomIds.map(r => r._id.toString());
 
     const reviews = await Review.find({ room: { $in: roomIdStrings } })
-      .populate("user", "username image email")
+      .populate("user", "username avatar email")
       .populate("room", "roomType")
       .sort({ createdAt: -1 });
 

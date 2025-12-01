@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { assets } from '../../assets/assets'
-import { UserButton } from '@clerk/clerk-react'
 
 const Sidebar = () => {
     const sidebarLinks = [
@@ -25,10 +24,10 @@ const Sidebar = () => {
                         }`
                     }
                 >
-                   <img src={item.icon} alt={item.icon} className='min-h-6 min-w-6'  />
-                   <p className='md:block hidden text-center'>{item.name}</p>
-                </NavLink>    
-             ))}
+                    <img src={item.icon} alt={item.icon} className='min-h-6 min-w-6' />
+                    <p className='md:block hidden text-center'>{item.name}</p>
+                </NavLink>
+            ))}
         </div >
     )
 }

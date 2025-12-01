@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { createContext, useContext, useEffect, useState } from 'react';
-import { data, useNavigate } from 'react-router-dom'
-import { useUser, useAuth } from '@clerk/clerk-react'
-import toast, { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast';
+import { getToken as getAuthToken, getUser as getAuthUser } from '../utils/authUtils';
 
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -11,13 +11,14 @@ const AppContext = createContext();
 export const AppProvider = ({ children }) => {
     const currency = import.meta.env.VITE_CURRENCY || "$";
     const navigate = useNavigate();
-    const { user } = useUser();
-    const { getToken } = useAuth();
+    const [user, setUser] = useState(null);
 
     const [isOwner, setIsOwner] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [userRole, setUserRole] = useState(null);
     const [showHotelReg, setShowHotelReg] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [searchedCities, setSearchedCities] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [hotelStatusUpdated, setHotelStatusUpdated] = useState(0); // Counter to trigger refresh
@@ -35,27 +36,13 @@ export const AppProvider = ({ children }) => {
         }
     }
 
-    const syncUser = async () => {
-        try {
-            const token = await getToken();
-            if (!token || !user) return;
-
-            // Sync user data to database
-            await axios.post('/api/user/sync', {
-                email: user.primaryEmailAddress?.emailAddress,
-                username: user.fullName || user.username || user.primaryEmailAddress?.emailAddress?.split('@')[0],
-                image: user.imageUrl
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-        } catch (error) {
-            console.error('Sync user error:', error);
-        }
+    const getToken = () => {
+        return getAuthToken();
     };
 
     const fetUser = async () => {
         try {
-            const token = await getToken();
+            const token = getToken();
             if (!token) return;
 
             const { data } = await axios.get('/api/user', {
@@ -67,27 +54,33 @@ export const AppProvider = ({ children }) => {
                 setIsOwner(data.role === "hotelOwner");
                 setIsAdmin(data.role === "admin");
                 setSearchedCities(data.recentSearchedCities || []);
-            } else {
-                // If user not found, sync and retry
-                console.log('User not found, syncing...');
-                await syncUser();
-                setTimeout(() => {
-                    fetUser()
-                }, 2000)
             }
         } catch (error) {
-            toast.error(error.message || 'Có lỗi xảy ra khi tải thông tin người dùng');
+            console.error('Error fetching user:', error);
         }
     };
 
     useEffect(() => {
-        if (user) {
-            // Sync user first, then fetch
-            syncUser().then(() => {
-                fetUser()
-            });
+        const authUser = getAuthUser();
+        if (authUser) {
+            // Validate user ID format (MongoDB ObjectId is 24 hex chars)
+            if (authUser.id && authUser.id.match(/^[0-9a-fA-F]{24}$/)) {
+                setUser(authUser);
+                // Set role states from user object immediately
+                const role = authUser.role || 'user';
+                setUserRole(role);
+                setIsAdmin(role === 'admin');
+                setIsOwner(role === 'hotelOwner');
+                // Then fetch additional data
+                fetUser();
+            } else {
+                // Old Clerk user detected, clear it
+                console.warn('Old Clerk user detected, clearing...');
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+            }
         }
-    }, [user]);
+    }, []);
 
     useEffect(() => {
         fetchRooms()
@@ -96,6 +89,7 @@ export const AppProvider = ({ children }) => {
         currency,
         navigate,
         user,
+        setUser,
         getToken,
         isOwner,
         setIsOwner,
@@ -106,6 +100,10 @@ export const AppProvider = ({ children }) => {
         axios,
         showHotelReg,
         setShowHotelReg,
+        showLoginModal,
+        setShowLoginModal,
+        showRegisterModal,
+        setShowRegisterModal,
         searchedCities,
         setSearchedCities,
         rooms,
@@ -118,7 +116,6 @@ export const AppProvider = ({ children }) => {
     return (
         <AppContext.Provider value={value}>
             {children}
-            <Toaster position="top-center" />
         </AppContext.Provider>
     );
 };

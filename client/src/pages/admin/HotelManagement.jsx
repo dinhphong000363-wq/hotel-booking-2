@@ -53,7 +53,7 @@ const HotelManagement = () => {
         // Filter by search query
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(hotel => 
+            filtered = filtered.filter(hotel =>
                 hotel.name.toLowerCase().includes(query) ||
                 hotel.city.toLowerCase().includes(query) ||
                 hotel.address.toLowerCase().includes(query) ||
@@ -207,41 +207,37 @@ const HotelManagement = () => {
                 <div className="flex gap-2 flex-wrap">
                     <button
                         onClick={() => setStatusFilter('all')}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            statusFilter === 'all'
+                        className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === 'all'
                                 ? 'bg-indigo-600 text-white shadow-md'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                            }`}
                     >
                         Tất cả ({statusCounts.all})
                     </button>
                     <button
                         onClick={() => setStatusFilter('pending')}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            statusFilter === 'pending'
+                        className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === 'pending'
                                 ? 'bg-yellow-600 text-white shadow-md'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                            }`}
                     >
                         Chờ duyệt ({statusCounts.pending})
                     </button>
                     <button
                         onClick={() => setStatusFilter('approved')}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            statusFilter === 'approved'
+                        className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === 'approved'
                                 ? 'bg-green-600 text-white shadow-md'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                            }`}
                     >
                         Đã duyệt ({statusCounts.approved})
                     </button>
                     <button
                         onClick={() => setStatusFilter('rejected')}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            statusFilter === 'rejected'
+                        className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === 'rejected'
                                 ? 'bg-red-600 text-white shadow-md'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                            }`}
                     >
                         Đã từ chối ({statusCounts.rejected})
                     </button>
@@ -251,8 +247,8 @@ const HotelManagement = () => {
             {/* Hotels Grid */}
             {filteredHotels.length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-                    {searchQuery || statusFilter !== 'all' 
-                        ? 'Không tìm thấy khách sạn nào phù hợp' 
+                    {searchQuery || statusFilter !== 'all'
+                        ? 'Không tìm thấy khách sạn nào phù hợp'
                         : 'Không có khách sạn nào'}
                 </div>
             ) : (
@@ -281,7 +277,7 @@ const HotelManagement = () => {
                             {/* Hotel Info */}
                             <div className="p-4">
                                 <h3 className="text-xl font-semibold mb-2 text-gray-800 line-clamp-1">{hotel.name}</h3>
-                                
+
                                 <div className="space-y-2 text-sm text-gray-600 mb-4">
                                     <div className="flex items-start gap-2">
                                         <img src={assets.locationIcon} alt="location" className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -321,7 +317,7 @@ const HotelManagement = () => {
                                             {currency}{Number(hotel.totalRevenue || 0).toLocaleString('vi-VN')}
                                         </p>
                                     </div>
-                                    
+
                                     {/* Revenue by Month */}
                                     {hotel.revenueByMonth && hotel.revenueByMonth.length > 0 && (
                                         <div className="mt-2 pt-2 border-t border-gray-200">
@@ -346,7 +342,7 @@ const HotelManagement = () => {
                                         <p className="text-xs text-gray-500 mb-2">Chủ khách sạn</p>
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={hotel.owner.image}
+                                                src={hotel.owner.avatar || assets.userIcon}
                                                 alt={hotel.owner.username}
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />

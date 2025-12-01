@@ -7,7 +7,7 @@ export const createRoom = async (req, res) => {
     const { roomType, pricePerNight, amenities, discount } = req.body;
 
     // ✅ Tìm khách sạn theo chủ sở hữu
-    const hotel = await Hotel.findOne({ owner: req.auth.userId });
+    const hotel = await Hotel.findOne({ owner: req.user._id });
     if (!hotel) {
       return res.json({ success: false, message: "Không tìm thấy khách sạn" });
     }
@@ -64,7 +64,7 @@ export const getRooms = async (req, res) => {
 // API để lấy tất cả các phòng cho một khách sạn cụ thể
 export const getOwnerRooms = async (req, res) => {
   try {
-    const hotelData = await Hotel.findOne({ owner: req.auth.userId });
+    const hotelData = await Hotel.findOne({ owner: req.user._id });
 
     const rooms = await Room.find({ hotel: hotelData._id.toString() }).populate("hotel");
 
@@ -98,7 +98,7 @@ export const updateRoom = async (req, res) => {
     const { roomType, pricePerNight, amenities, discount } = req.body;
 
     // Tìm khách sạn theo chủ sở hữu
-    const hotel = await Hotel.findOne({ owner: req.auth.userId });
+    const hotel = await Hotel.findOne({ owner: req.user._id });
     if (!hotel) {
       return res.json({ success: false, message: "Không tìm thấy khách sạn" });
     }
@@ -145,7 +145,7 @@ export const deleteRoom = async (req, res) => {
     const { id } = req.params;
 
     // Tìm khách sạn theo chủ sở hữu
-    const hotel = await Hotel.findOne({ owner: req.auth.userId });
+    const hotel = await Hotel.findOne({ owner: req.user._id });
     if (!hotel) {
       return res.json({ success: false, message: "Không tìm thấy khách sạn" });
     }

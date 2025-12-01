@@ -44,7 +44,7 @@ const UserManagement = () => {
 
         try {
             const token = await getToken();
-            const { data } = await axios.put(`/api/admin/users/${userId}/role`, 
+            const { data } = await axios.put(`/api/admin/users/${userId}/role`,
                 { role: selectedRole },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -65,7 +65,7 @@ const UserManagement = () => {
     const handleDeleteClick = (user) => {
         setDeleteConfirm({
             userId: user._id,
-            username: user.username
+            username: user.name
         });
     };
 
@@ -130,7 +130,7 @@ const UserManagement = () => {
     return (
         <div>
             <h1 className="text-2xl font-bold mb-6">Quản Lý Người Dùng</h1>
-            
+
             {users.length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
                     Không có người dùng nào
@@ -163,14 +163,20 @@ const UserManagement = () => {
                                     <tr key={u._id}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
-                                                <img
-                                                    className="h-10 w-10 rounded-full mr-3"
-                                                    src={u.image}
-                                                    alt={u.username}
-                                                />
+                                                {u.avatar ? (
+                                                    <img
+                                                        className="h-10 w-10 rounded-full mr-3 object-cover"
+                                                        src={u.avatar}
+                                                        alt={u.name}
+                                                    />
+                                                ) : (
+                                                    <div className="h-10 w-10 rounded-full mr-3 bg-blue-600 flex items-center justify-center text-white font-medium">
+                                                        {u.name?.charAt(0).toUpperCase() || '?'}
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <div className="text-sm font-medium text-gray-900">
-                                                        {u.username}
+                                                        {u.name}
                                                     </div>
                                                 </div>
                                             </div>

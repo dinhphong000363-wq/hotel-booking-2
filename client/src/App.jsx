@@ -24,6 +24,9 @@ import Favorites from './pages/Favorites'
 import DiscountedRooms from './pages/DiscountedRooms'
 import Chatbot from './components/Chatbot'
 import HotelStatus from './pages/HotelStatus'
+import Profile from './pages/Profile'
+import AuthCallback from './pages/AuthCallback'
+import ProtectedRoute from './components/ProtectedRoute'
 
 const App = () => {
   const location = useLocation()
@@ -38,24 +41,60 @@ const App = () => {
       {!isOwnerPath && !isAdminPath && <Chatbot />}
       <div className="min-h-[70vh]">
         <Routes>
+          {/* Auth routes - public */}
+          <Route path='/auth/callback' element={<AuthCallback />} />
+
+          {/* Public routes */}
           <Route path='/' element={<Home />} />
           <Route path='/rooms' element={<AllRooms />} />
           <Route path='/rooms/:id' element={<RoomsTails />} />
           <Route path='/discounted-rooms' element={<DiscountedRooms />} />
-          <Route path='/my-bookings' element={<MyBookings />} />
-          <Route path='/favorites' element={<Favorites />} />
-          <Route path='/hotel-status' element={<HotelStatus />} />
+
+          {/* Protected routes */}
+          <Route path='/profile' element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path='/my-bookings' element={
+            <ProtectedRoute>
+              <MyBookings />
+            </ProtectedRoute>
+          } />
+          <Route path='/favorites' element={
+            <ProtectedRoute>
+              <Favorites />
+            </ProtectedRoute>
+          } />
+          <Route path='/hotel-status' element={
+            <ProtectedRoute>
+              <HotelStatus />
+            </ProtectedRoute>
+          } />
           <Route path='/loader/:nextUrl' element={<Loader />} />
-          <Route path='/owner' element={<Layout />}>
+
+          {/* Owner routes - protected */}
+          <Route path='/owner' element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
             <Route index element={<Dashboard />} />
             <Route path='hotel-info' element={<HotelInfo />} />
             <Route path='add-room' element={<AddRoom />} />
             <Route path='list-room' element={<ListRoom />} />
             <Route path='bookings' element={<OwnerBookings />} />
           </Route>
-          <Route path='/admin' element={<AdminLayout />}>
+
+          {/* Admin routes - protected */}
+          <Route path='/admin' element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<AdminDashboard />} />
             <Route path='dashboard' element={<AdminDashboard />} />
-            <Route index element={<HotelApproval />} />
+            <Route path='approval' element={<HotelApproval />} />
             <Route path='hotels' element={<HotelManagement />} />
             <Route path='users' element={<UserManagement />} />
           </Route>

@@ -99,11 +99,11 @@ const ConfirmModal = ({
         if (!highlightText || !message.includes(highlightText)) {
             return message;
         }
-        
+
         const index = message.indexOf(highlightText);
         const before = message.substring(0, index);
         const after = message.substring(index + highlightText.length);
-        
+
         return (
             <>
                 {before}
@@ -117,11 +117,11 @@ const ConfirmModal = ({
 
     return (
         <>
-            <div 
+            <div
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
                 onClick={onClose}
             >
-                <div 
+                <div
                     className={`bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-scaleIn border ${styles.borderColor}`}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -191,7 +191,7 @@ const ConfirmModal = ({
             </div>
 
             {/* Animations */}
-            <style jsx>{`
+            <style>{`
                 @keyframes fadeIn {
                     from {
                         opacity: 0;

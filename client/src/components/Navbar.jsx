@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { assets } from "../assets/assets";
-import { useClerk, UserButton } from "@clerk/clerk-react";
 import { useAppContext } from "../conext/AppContext";
+import UserMenu from "./UserMenu";
+import LoginModal from "./LoginModal";
+import RegisterModal from "./RegisterModal";
 
 const BookIcon = () => {
     return (
@@ -60,9 +62,21 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [hotelStatus, setHotelStatus] = useState(null); // null, 'pending', 'approved', 'rejected'
     const [loadingHotelStatus, setLoadingHotelStatus] = useState(false);
-    const { openSignIn } = useClerk();
     const location = useLocation();
-    const { user, navigate, isOwner, isAdmin, setShowHotelReg, axios, getToken, hotelStatusUpdated } = useAppContext();
+    const {
+        user,
+        navigate,
+        isOwner,
+        isAdmin,
+        setShowHotelReg,
+        axios,
+        getToken,
+        hotelStatusUpdated,
+        showLoginModal,
+        setShowLoginModal,
+        showRegisterModal,
+        setShowRegisterModal
+    } = useAppContext();
 
     // Fetch hotel status if user is not owner or admin
     useEffect(() => {
@@ -204,23 +218,29 @@ const Navbar = () => {
                 />
 
                 {user ? (
-                    <UserButton>
-                        <UserButton.MenuItems>
-                            <UserButton.Action
-                                label="Danh sách phòng yêu thích"
-                                labelIcon={<HeartIcon />}
-                                onClick={() => navigate("/favorites")}
-                            />
-                            <UserButton.Action
-                                label="Danh sách đặt phòng"
-                                labelIcon={<BookIcon />}
-                                onClick={() => navigate("/my-bookings")}
-                            />
-                        </UserButton.MenuItems>
-                    </UserButton>
+                    <UserMenu user={user}>
+                        <button
+                            onClick={() => {
+                                navigate("/favorites");
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        >
+                            <HeartIcon />
+                            Danh sách phòng yêu thích
+                        </button>
+                        <button
+                            onClick={() => {
+                                navigate("/my-bookings");
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        >
+                            <BookIcon />
+                            Danh sách đặt phòng
+                        </button>
+                    </UserMenu>
                 ) : (
                     <button
-                        onClick={openSignIn}
+                        onClick={() => setShowLoginModal(true)}
                         className={`px-8 py-2.5 rounded-full ml-4 transition-all duration-500 ${isScrolled
                             ? "text-white bg-black"
                             : "bg-white text-black"
@@ -234,20 +254,22 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <div className="flex items-center gap-3 md:hidden">
                 {user && (
-                    <UserButton>
-                        <UserButton.MenuItems>
-                            <UserButton.Action
-                                label="Danh sách phòng yêu thích"
-                                labelIcon={<HeartIcon />}
-                                onClick={() => navigate("/favorites")}
-                            />
-                            <UserButton.Action
-                                label="Lịch sử đặt phòng"
-                                labelIcon={<BookIcon />}
-                                onClick={() => navigate("/my-bookings")}
-                            />
-                        </UserButton.MenuItems>
-                    </UserButton>
+                    <UserMenu user={user}>
+                        <button
+                            onClick={() => navigate("/favorites")}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        >
+                            <HeartIcon />
+                            Danh sách phòng yêu thích
+                        </button>
+                        <button
+                            onClick={() => navigate("/my-bookings")}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        >
+                            <BookIcon />
+                            Lịch sử đặt phòng
+                        </button>
+                    </UserMenu>
                 )}
                 <img
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -333,13 +355,31 @@ const Navbar = () => {
 
                 {!user && (
                     <button
-                        onClick={openSignIn}
+                        onClick={() => setShowLoginModal(true)}
                         className="bg-black text-white px-8 py-2.5 rounded-full transition-all duration-500"
                     >
                         Đăng nhập
                     </button>
                 )}
             </div>
+
+            {/* Auth Modals */}
+            <LoginModal
+                isOpen={showLoginModal}
+                onClose={() => setShowLoginModal(false)}
+                onSwitchToRegister={() => {
+                    setShowLoginModal(false);
+                    setShowRegisterModal(true);
+                }}
+            />
+            <RegisterModal
+                isOpen={showRegisterModal}
+                onClose={() => setShowRegisterModal(false)}
+                onSwitchToLogin={() => {
+                    setShowRegisterModal(false);
+                    setShowLoginModal(true);
+                }}
+            />
         </nav>
     );
 };

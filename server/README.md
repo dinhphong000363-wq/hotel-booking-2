@@ -22,3 +22,9 @@ http://localhost:3000
  form đăng kí khách sạn , cập nhật thêm cái gg map
  tìm hiểu rõ về booking , thanh toán
   -->
+
+
+  <!-- 
+  
+  
+   -->

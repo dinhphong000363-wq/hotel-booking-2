@@ -1,46 +1,49 @@
+import jwt from 'jsonwebtoken';
 import User from "../models/User.js";
 
 // Middleware to check if user is authenticated
 export const protect = async (req, res, next) => {
   try {
-    // ✅ Fix deprecated req.auth - use as function
-    const auth = req.auth();
-    const { userId } = auth || {};
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-    if (!userId) {
-      return res.json({ success: false, message: "Not authenticated" });
+    if (!token) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
     }
 
-    // Find user in DB by Clerk ID
-    let user = await User.findById(userId);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ Auto-create user if not found (fallback for webhook issues)
+    // Check if userId is valid MongoDB ObjectId
+    if (!decoded.userId || !decoded.userId.match(/^[0-9a-fA-F]{24}$/)) {
+      console.error("❌ Invalid user ID format:", decoded.userId);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token - please clear cache and login again"
+      });
+    }
+
+    const user = await User.findById(decoded.userId);
+
     if (!user) {
-      console.log("⚠️ User not found in database for ID:", userId);
-      console.log("🔄 Creating placeholder user - please sync via /api/user/sync");
-
-      try {
-        // Create a basic user entry
-        user = await User.create({
-          _id: userId,
-          email: `${userId}@placeholder.com`,
-          username: `User_${userId.slice(-8)}`,
-          image: 'https://via.placeholder.com/150',
-        });
-        console.log("✅ Placeholder user created. User should call /api/user/sync to update details.");
-      } catch (createError) {
-        console.error("❌ Error auto-creating user:", createError);
-        return res.json({
-          success: false,
-          message: "User not found. Please sync your account at /api/user/sync"
-        });
-      }
+      return res.status(401).json({ success: false, message: "User not found" });
     }
 
     req.user = user;
     next();
   } catch (error) {
     console.error("❌ Error in protect middleware:", error);
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(403).json({ success: false, message: "Invalid token" });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(403).json({ success: false, message: "Token expired" });
+    }
+    if (error.name === 'CastError') {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid user ID - please clear cache and login again"
+      });
+    }
     res.status(500).json({ success: false, message: "Authentication error" });
   }
 };
