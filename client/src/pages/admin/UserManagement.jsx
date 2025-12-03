@@ -113,7 +113,7 @@ const UserManagement = () => {
             case 'admin':
                 return 'Quản trị viên';
             case 'hotelOwner':
-                return 'Chủ khách sạn';
+                return 'Hotel Manager';
             default:
                 return 'Người dùng';
         }
@@ -193,7 +193,7 @@ const UserManagement = () => {
                                                         className="text-sm border rounded px-2 py-1"
                                                     >
                                                         <option value="user">Người dùng</option>
-                                                        <option value="hotelOwner">Chủ khách sạn</option>
+                                                        <option value="hotelOwner">Hotel Manager</option>
                                                         <option value="admin">Quản trị viên</option>
                                                     </select>
                                                     <button

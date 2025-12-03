@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { assets } from '../assets/assets'
 import toast from 'react-hot-toast'
 
@@ -37,8 +37,9 @@ const HotelContact = ({ hotel }) => {
     }
 
     const handleCopyPhone = () => {
-        if (hotel.contactPhone) {
-            navigator.clipboard.writeText(hotel.contactPhone)
+        const phone = hotel.contactPhone || hotel.contact
+        if (phone) {
+            navigator.clipboard.writeText(phone)
             toast.success('Đã sao chép số điện thoại')
         }
     }
@@ -47,15 +48,29 @@ const HotelContact = ({ hotel }) => {
         <>
             <div className="flex flex-col items-start gap-4 px-4 md:px-16 lg:px-24 xl:px-32 py-10 bg-gradient-to-br from-gray-50 to-white rounded-2xl">
                 <div className="flex gap-4 items-center">
-                    <img
-                        src={hotel.owner?.image || assets.userIcon}
-                        alt="Host"
-                        className="h-16 w-16 md:h-20 md:w-20 rounded-full object-cover border-2 border-indigo-200 shadow-md"
-                    />
+                    <div className="h-16 w-16 md:h-20 md:w-20 rounded-full border-2 border-indigo-200 shadow-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                        {hotel.owner?.avatar ? (
+                            <img
+                                src={hotel.owner.avatar}
+                                alt="Host"
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    e.target.style.display = 'none'
+                                    e.target.parentElement.innerHTML = `<img src="${assets.userIcon}" alt="Default" class="h-full w-full object-cover" />`
+                                }}
+                            />
+                        ) : (
+                            <img
+                                src={assets.userIcon}
+                                alt="Default Host"
+                                className="h-full w-full object-cover"
+                            />
+                        )}
+                    </div>
                     <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide">Chủ khách sạn</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Hotel Manager</p>
                         <p className="text-lg md:text-xl font-semibold text-gray-800">
-                            {hotel.name}
+                            {hotel.owner?.name || hotel.name}
                         </p>
                         <div className="flex items-center mt-1">
                             <StaticRating />
@@ -103,13 +118,27 @@ const HotelContact = ({ hotel }) => {
                         <div className="p-6 space-y-4">
                             {/* Hotel Owner Info */}
                             <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-                                <img
-                                    src={hotel.owner?.image || assets.userIcon}
-                                    alt="Owner"
-                                    className="h-14 w-14 rounded-full object-cover border-2 border-gray-200"
-                                />
+                                <div className="h-14 w-14 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    {hotel.owner?.avatar ? (
+                                        <img
+                                            src={hotel.owner.avatar}
+                                            alt="Owner"
+                                            className="h-full w-full object-cover"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none'
+                                                e.target.parentElement.innerHTML = `<img src="${assets.userIcon}" alt="Default" class="h-full w-full object-cover" />`
+                                            }}
+                                        />
+                                    ) : (
+                                        <img
+                                            src={assets.userIcon}
+                                            alt="Default Owner"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    )}
+                                </div>
                                 <div>
-                                    <p className="font-semibold text-gray-800">{hotel.owner?.username || 'Chủ khách sạn'}</p>
+                                    <p className="font-semibold text-gray-800">{hotel.owner?.name || 'Hotel Manager'}</p>
                                     <p className="text-sm text-gray-500">{hotel.name}</p>
                                 </div>
                             </div>
@@ -141,7 +170,7 @@ const HotelContact = ({ hotel }) => {
                             )}
 
                             {/* Phone */}
-                            {hotel.contactPhone && (
+                            {(hotel.contactPhone || hotel.contact) && (
                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-green-100 rounded-full">
@@ -151,7 +180,7 @@ const HotelContact = ({ hotel }) => {
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500">Số điện thoại</p>
-                                            <p className="text-sm font-medium text-gray-800">{hotel.contactPhone}</p>
+                                            <p className="text-sm font-medium text-gray-800">{hotel.contactPhone || hotel.contact}</p>
                                         </div>
                                     </div>
                                     <button
@@ -167,7 +196,7 @@ const HotelContact = ({ hotel }) => {
                             )}
 
                             {/* Address */}
-                            {hotel.fullAddress && (
+                            {(hotel.fullAddress || hotel.address) && (
                                 <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                                     <div className="p-2 bg-orange-100 rounded-full">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,7 +206,7 @@ const HotelContact = ({ hotel }) => {
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-xs text-gray-500">Địa chỉ</p>
-                                        <p className="text-sm font-medium text-gray-800">{hotel.fullAddress}</p>
+                                        <p className="text-sm font-medium text-gray-800">{hotel.fullAddress || hotel.address}</p>
                                     </div>
                                 </div>
                             )}
@@ -192,9 +221,9 @@ const HotelContact = ({ hotel }) => {
                                     Gửi Email
                                 </a>
                             )}
-                            {hotel.contactPhone && (
+                            {(hotel.contactPhone || hotel.contact) && (
                                 <a
-                                    href={`tel:${hotel.contactPhone}`}
+                                    href={`tel:${hotel.contactPhone || hotel.contact}`}
                                     className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-center text-sm font-medium"
                                 >
                                     Gọi ngay

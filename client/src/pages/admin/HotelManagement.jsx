@@ -187,7 +187,7 @@ const HotelManagement = () => {
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="Tìm kiếm theo tên, thành phố, địa chỉ, chủ khách sạn..."
+                            placeholder="Tìm kiếm theo tên, thành phố, địa chỉ, hotel manager..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -208,8 +208,8 @@ const HotelManagement = () => {
                     <button
                         onClick={() => setStatusFilter('all')}
                         className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === 'all'
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         Tất cả ({statusCounts.all})
@@ -217,8 +217,8 @@ const HotelManagement = () => {
                     <button
                         onClick={() => setStatusFilter('pending')}
                         className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === 'pending'
-                                ? 'bg-yellow-600 text-white shadow-md'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-yellow-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         Chờ duyệt ({statusCounts.pending})
@@ -226,8 +226,8 @@ const HotelManagement = () => {
                     <button
                         onClick={() => setStatusFilter('approved')}
                         className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === 'approved'
-                                ? 'bg-green-600 text-white shadow-md'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-green-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         Đã duyệt ({statusCounts.approved})
@@ -235,8 +235,8 @@ const HotelManagement = () => {
                     <button
                         onClick={() => setStatusFilter('rejected')}
                         className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === 'rejected'
-                                ? 'bg-red-600 text-white shadow-md'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-red-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         Đã từ chối ({statusCounts.rejected})
@@ -339,7 +339,7 @@ const HotelManagement = () => {
                                 {/* Owner Info */}
                                 {hotel.owner && (
                                     <div className="pt-4 border-t border-gray-200 mb-4">
-                                        <p className="text-xs text-gray-500 mb-2">Chủ khách sạn</p>
+                                        <p className="text-xs text-gray-500 mb-2">Hotel Manager</p>
                                         <div className="flex items-center gap-3">
                                             <img
                                                 src={hotel.owner.avatar || assets.userIcon}

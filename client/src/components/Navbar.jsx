@@ -68,7 +68,6 @@ const Navbar = () => {
         navigate,
         isOwner,
         isAdmin,
-        setShowHotelReg,
         axios,
         getToken,
         hotelStatusUpdated,
@@ -191,7 +190,7 @@ const Navbar = () => {
                             <button
                                 className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? "text-black border-red-300" : "text-white border-red-400"
                                     } transition-all hover:opacity-80`}
-                                onClick={() => setShowHotelReg(true)}
+                                onClick={() => navigate('/register-hotel')}
                             >
                                 Đăng ký lại khách sạn
                             </button>
@@ -199,7 +198,7 @@ const Navbar = () => {
                             <button
                                 className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? "text-black" : "text-white"
                                     } transition-all`}
-                                onClick={() => setShowHotelReg(true)}
+                                onClick={() => navigate('/register-hotel')}
                             >
                                 Đăng ký khách sạn của bạn
                             </button>
@@ -338,14 +337,14 @@ const Navbar = () => {
                         ) : hotelStatus === 'rejected' ? (
                             <button
                                 className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all border-red-300 text-red-700 hover:opacity-80"
-                                onClick={() => setShowHotelReg(true)}
+                                onClick={() => navigate('/register-hotel')}
                             >
                                 Đăng ký lại khách sạn
                             </button>
                         ) : (
                             <button
                                 className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
-                                onClick={() => setShowHotelReg(true)}
+                                onClick={() => navigate('/register-hotel')}
                             >
                                 Đăng ký khách sạn của bạn
                             </button>

@@ -1,10 +1,7 @@
 # hotel_bookinh
 # hotel-booking
 
-https://hotel-booking-rho-coral.vercel.app/
 
-<!--  -->
-https://hotel-booking-2-nine.vercel.app/
 
 http://localhost:3000
 

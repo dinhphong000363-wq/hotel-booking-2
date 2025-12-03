@@ -16,7 +16,6 @@ export const AppProvider = ({ children }) => {
     const [isOwner, setIsOwner] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [userRole, setUserRole] = useState(null);
-    const [showHotelReg, setShowHotelReg] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [searchedCities, setSearchedCities] = useState([]);
@@ -98,8 +97,6 @@ export const AppProvider = ({ children }) => {
         userRole,
         setUserRole,
         axios,
-        showHotelReg,
-        setShowHotelReg,
         showLoginModal,
         setShowLoginModal,
         showRegisterModal,

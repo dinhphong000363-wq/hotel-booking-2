@@ -93,3 +93,31 @@ export const updateOwnerHotel = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+
+// Cancel hotel registration
+export const cancelRegistration = async (req, res) => {
+    try {
+        const ownerId = req.user._id;
+
+        const hotel = await Hotel.findOne({ owner: ownerId });
+
+        if (!hotel) {
+            return res.json({ success: false, message: "Khách sạn không tồn tại" });
+        }
+
+        // Only allow cancellation if hotel is pending or rejected
+        if (hotel.status === "approved") {
+            return res.json({
+                success: false,
+                message: "Không thể hủy đăng ký khách sạn đã được duyệt. Vui lòng liên hệ admin."
+            });
+        }
+
+        // Delete the hotel
+        await Hotel.findByIdAndDelete(hotel._id);
+
+        res.json({ success: true, message: "Đã hủy đăng ký khách sạn thành công" });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};

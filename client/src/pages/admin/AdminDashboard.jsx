@@ -81,7 +81,7 @@ const AdminDashboard = () => {
     // Prepare user role data for pie chart
     const userRoleChartData = [
         { name: 'Người dùng', value: stats.userRoleData.user || 0, color: COLORS[0] },
-        { name: 'Chủ khách sạn', value: stats.userRoleData.hotelOwner || 0, color: COLORS[1] },
+        { name: 'Hotel Manager', value: stats.userRoleData.hotelOwner || 0, color: COLORS[1] },
         { name: 'Quản trị viên', value: stats.userRoleData.admin || 0, color: COLORS[4] },
     ].filter(item => item.value > 0);
 

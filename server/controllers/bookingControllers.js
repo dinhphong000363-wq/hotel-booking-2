@@ -3,7 +3,6 @@ import Booking from "../models/Booking.js";
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
 import Notification from "../models/Notification.js";
-import stripe from "stripe"
 
 // Chức năng kiểm tra tình trạng phòng trống
 const checkAvailability = async ({ checkInDate, checkOutDate, room }) => {
@@ -245,45 +244,43 @@ export const updateBookingStatus = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-export const stripePayment = async (req, res) => {
+
+// API để cập nhật thông tin booking (payment status, payment method)
+// PATCH /api/bookings/:id
+export const updateBooking = async (req, res) => {
     try {
-        const { bookingId } = req.body
-        const booking = await Booking.findById(bookingId)
-        const roomData = await Room.findById(booking.room).populate('hotel');
-        const totalPrice = booking.totalPrice;
-        const { origin } = req.headers;
+        const { id } = req.params;
+        const userId = req.user._id;
+        const { isPaid, paymentMethod } = req.body;
 
-        const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
-        const line_items = [
-            {
-                price_data: {
-                    currency: 'usd',
-                    product_data: {
-                        name: roomData.hotel.name,
-                    },
+        // Tìm booking và kiểm tra xem nó có thuộc về user này không
+        const booking = await Booking.findById(id);
 
-                    unit_amount: totalPrice * 100
-                },
-                quantity: 1,
-            }
-        ]
-        //create checkout session
-        const session = await stripeInstance.checkout.sessions.create({
-            line_items,
-            mode: 'payment',
-            success_url: `${origin}/loader/my-bookings`,
-            cancel_url: `${origin}/my-bookings`,
-            metadata: {
-                bookingId
-            }
-        })
-        res.json({ success: true, url: session.url })
+        if (!booking) {
+            return res.json({ success: false, message: "Booking not found" });
+        }
 
+        // Kiểm tra xem booking có thuộc về user này không
+        if (booking.user.toString() !== userId.toString()) {
+            return res.json({ success: false, message: "Unauthorized to update this booking" });
+        }
+
+        // Cập nhật các trường được cho phép
+        if (isPaid !== undefined) {
+            booking.isPaid = isPaid;
+        }
+        if (paymentMethod) {
+            booking.paymentMethod = paymentMethod;
+        }
+
+        await booking.save();
+
+        res.json({ success: true, message: "Booking updated successfully", booking });
     } catch (error) {
-        res.json({ success: false, message: 'payment failed' })
-
+        console.log(error);
+        res.json({ success: false, message: "Failed to update booking" });
     }
-}
+};
 
 // API để xóa một đặt phòng
 // DELETE /api/bookings/:id

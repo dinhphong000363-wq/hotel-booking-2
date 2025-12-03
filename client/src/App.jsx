@@ -5,7 +5,7 @@ import Home from './pages/Home'
 import AllRooms from './pages/AllRooms'
 import RoomsTails from './pages/RoomsTails'
 import MyBookings from './pages/MyBookings'
-import HotelReg from './components/HotelReg'
+import RegisterHotel from './pages/RegisterHotel'
 import Layout from './pages/hotelsOwner/Layout'
 import Dashboard from './pages/hotelsOwner/Dashboard'
 import AddRoom from './pages/hotelsOwner/AddRoom'
@@ -19,7 +19,6 @@ import HotelManagement from './pages/admin/HotelManagement'
 import UserManagement from './pages/admin/UserManagement'
 import { Toaster } from 'react-hot-toast'
 import { useAppContext } from './conext/AppContext'
-import Loader from './components/Loader'
 import Favorites from './pages/Favorites'
 import DiscountedRooms from './pages/DiscountedRooms'
 import Chatbot from './components/Chatbot'
@@ -27,18 +26,19 @@ import HotelStatus from './pages/HotelStatus'
 import Profile from './pages/Profile'
 import AuthCallback from './pages/AuthCallback'
 import ProtectedRoute from './components/ProtectedRoute'
+import StripePayment from './pages/payment/StripePayment'
+import MoMoPayment from './pages/payment/MoMoPayment'
 
 const App = () => {
   const location = useLocation()
   const isOwnerPath = location.pathname.includes("owner")
   const isAdminPath = location.pathname.includes("admin")
-  const { showHotelReg } = useAppContext()
+  const isPaymentPath = location.pathname.includes("/payment/")
   return (
     <div>
       <Toaster />
-      {!isOwnerPath && !isAdminPath && <Navbar />}
-      {showHotelReg && < HotelReg />}
-      {!isOwnerPath && !isAdminPath && <Chatbot />}
+      {!isOwnerPath && !isAdminPath && !isPaymentPath && <Navbar />}
+      {!isOwnerPath && !isAdminPath && !isPaymentPath && <Chatbot />}
       <div className="min-h-[70vh]">
         <Routes>
           {/* Auth routes - public */}
@@ -49,6 +49,11 @@ const App = () => {
           <Route path='/rooms' element={<AllRooms />} />
           <Route path='/rooms/:id' element={<RoomsTails />} />
           <Route path='/discounted-rooms' element={<DiscountedRooms />} />
+          <Route path='/register-hotel' element={
+            <ProtectedRoute>
+              <RegisterHotel />
+            </ProtectedRoute>
+          } />
 
           {/* Protected routes */}
           <Route path='/profile' element={
@@ -71,7 +76,18 @@ const App = () => {
               <HotelStatus />
             </ProtectedRoute>
           } />
-          <Route path='/loader/:nextUrl' element={<Loader />} />
+
+          {/* Payment routes - protected */}
+          <Route path='/payment/stripe' element={
+            <ProtectedRoute>
+              <StripePayment />
+            </ProtectedRoute>
+          } />
+          <Route path='/payment/momo' element={
+            <ProtectedRoute>
+              <MoMoPayment />
+            </ProtectedRoute>
+          } />
 
           {/* Owner routes - protected */}
           <Route path='/owner' element={

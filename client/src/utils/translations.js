@@ -26,7 +26,10 @@ export const bookingStatusLabels = {
 
 export const paymentMethodLabels = {
     Stripe: 'Stripe',
+    stripe: 'Stripe',
+    momo: 'MoMo',
     'Pay At Hotel': 'Thanh toán tại khách sạn',
+    'pay-at-hotel': 'Thanh toán khi trả phòng',
 };
 
 export const translateAmenity = (value) => amenityLabels[value] || value;

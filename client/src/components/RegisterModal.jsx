@@ -71,45 +71,70 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fadeIn overflow-y-auto p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn overflow-y-auto"
             onClick={onClose}
+            style={{
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)'
+            }}
         >
             <div
-                className="bg-white rounded-2xl shadow-2xl max-w-md w-full my-auto transform transition-all"
+                className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full my-auto transform transition-all animate-scaleIn"
                 onClick={(e) => e.stopPropagation()}
+                style={{
+                    animation: 'scaleIn 0.3s ease-out'
+                }}
             >
-                {/* Header with gradient */}
-                <div className="relative bg-gradient-to-r from-green-600 to-emerald-600 rounded-t-2xl p-8 text-white">
+                {/* Decorative elements */}
+                <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-br from-teal-400 to-green-400 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+
+                {/* Header with stunning gradient */}
+                <div className="relative bg-gradient-to-br from-green-600 via-emerald-600 to-teal-500 rounded-t-3xl p-8 text-white overflow-hidden">
+                    {/* Animated background pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full blur-2xl animate-pulse"></div>
+                        <div className="absolute bottom-0 right-0 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+                    </div>
+
                     <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors hover:rotate-90 transform duration-300"
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClose();
+                        }}
+                        className="absolute top-5 right-5 text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition-all hover:rotate-90 transform duration-300 backdrop-blur-sm z-10"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
-                    <div className="flex items-center gap-3">
-                        <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                    <div className="relative flex items-center gap-4">
+                        <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-md border border-white/30 shadow-lg">
+                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                             </svg>
                         </div>
                         <div>
-                            <h2 className="text-3xl font-bold">Tạo tài khoản mới</h2>
-                            <p className="text-green-100 text-sm mt-1">Bắt đầu hành trình của bạn</p>
+                            <h2 className="text-3xl font-bold tracking-tight">Tạo tài khoản mới ✨</h2>
+                            <p className="text-green-100 text-sm mt-1.5 font-medium">Bắt đầu hành trình của bạn ngay hôm nay</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="p-8">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        {/* Name field */}
                         <div className="space-y-2">
-                            <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
+                            <label htmlFor="name" className="block text-sm font-bold text-gray-800 flex items-center gap-2">
+                                <span className="text-lg">👤</span>
                                 Họ và tên
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                 </div>
@@ -120,19 +145,21 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                                     required
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                    className="block w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all text-gray-800 placeholder:text-gray-400 hover:border-gray-300"
                                     placeholder="Nguyễn Văn A"
                                 />
                             </div>
                         </div>
 
+                        {/* Email field */}
                         <div className="space-y-2">
-                            <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                            <label htmlFor="email" className="block text-sm font-bold text-gray-800 flex items-center gap-2">
+                                <span className="text-lg">📧</span>
                                 Email
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                                     </svg>
                                 </div>
@@ -143,19 +170,21 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                                     required
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                    className="block w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all text-gray-800 placeholder:text-gray-400 hover:border-gray-300"
                                     placeholder="example@email.com"
                                 />
                             </div>
                         </div>
 
+                        {/* Phone field */}
                         <div className="space-y-2">
-                            <label htmlFor="phone" className="block text-sm font-semibold text-gray-700">
+                            <label htmlFor="phone" className="block text-sm font-bold text-gray-800 flex items-center gap-2">
+                                <span className="text-lg">📱</span>
                                 Số điện thoại
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
                                 </div>
@@ -166,19 +195,21 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                                     required
                                     value={formData.phone}
                                     onChange={handleChange}
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                    className="block w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all text-gray-800 placeholder:text-gray-400 hover:border-gray-300"
                                     placeholder="0123456789"
                                 />
                             </div>
                         </div>
 
+                        {/* Password field */}
                         <div className="space-y-2">
-                            <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                            <label htmlFor="password" className="block text-sm font-bold text-gray-800 flex items-center gap-2">
+                                <span className="text-lg">🔒</span>
                                 Mật khẩu
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
                                 </div>
@@ -189,13 +220,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                                     required
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                    className="block w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all text-gray-800 placeholder:text-gray-400 hover:border-gray-300"
                                     placeholder="••••••••"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-700 transition-colors"
                                 >
                                     {showPassword ? (
                                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,13 +242,15 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                             </div>
                         </div>
 
+                        {/* Confirm Password field */}
                         <div className="space-y-2">
-                            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+                            <label htmlFor="confirmPassword" className="block text-sm font-bold text-gray-800 flex items-center gap-2">
+                                <span className="text-lg">✅</span>
                                 Xác nhận mật khẩu
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
@@ -228,13 +261,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                                     required
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
-                                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                    className="block w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all text-gray-800 placeholder:text-gray-400 hover:border-gray-300"
                                     placeholder="••••••••"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-700 transition-colors"
                                 >
                                     {showConfirmPassword ? (
                                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,45 +283,83 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                             </div>
                         </div>
 
+                        {/* Submit button */}
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-lg text-base font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            className="w-full flex justify-center items-center gap-2 py-4 px-6 border-none rounded-xl shadow-lg text-base font-bold text-white bg-gradient-to-r from-green-600 via-emerald-600 to-teal-500 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-green-200 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group"
                         >
-                            {loading ? (
-                                <>
-                                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Đang xử lý...
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                    </svg>
-                                    Đăng ký
-                                </>
-                            )}
+                            <div className="absolute inset-0 bg-gradient-to-r from-green-700 via-emerald-700 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <span className="relative flex items-center gap-2">
+                                {loading ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Đang xử lý...
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="text-xl">🎉</span>
+                                        Đăng ký ngay
+                                    </>
+                                )}
+                            </span>
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Đã có tài khoản?{' '}
-                            <button
-                                onClick={onSwitchToLogin}
-                                className="font-semibold text-green-600 hover:text-green-700 hover:underline transition-all"
-                            >
-                                Đăng nhập ngay
-                            </button>
-                        </p>
+                    {/* Login link */}
+                    <div className="mt-8 text-center">
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-100">
+                            <p className="text-sm text-gray-700 font-medium">
+                                Đã có tài khoản?{' '}
+                                <button
+                                    onClick={onSwitchToLogin}
+                                    className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all inline-flex items-center gap-1 group"
+                                >
+                                    Đăng nhập ngay
+                                    <svg className="w-4 h-4 text-green-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </button>
+                            </p>
+                        </div>
                     </div>
                 </div>
+
+                {/* Bottom accent */}
+                <div className="h-2 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-500 rounded-b-3xl"></div>
             </div>
+
+            <style jsx>{`
+                @keyframes scaleIn {
+                    from {
+                        opacity: 0;
+                        transform: scale(0.9);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.2s ease-out;
+                }
+                .animate-scaleIn {
+                    animation: scaleIn 0.3s ease-out;
+                }
+            `}</style>
         </div>
     );
 };
 
-export default RegisterModal;
+export default RegisterModal

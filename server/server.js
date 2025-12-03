@@ -13,7 +13,6 @@ import favoriteRouter from "./routes/favoriteRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import ownerRouter from "./routes/ownerRoutes.js";
-import { stripeWebhooks } from "./controllers/stripeWebhook.js";
 import chatbotRouter from "./routes/chatbotRoutes.js";
 import authRouter from "./routes/authRoutes.js";
 
@@ -25,24 +24,6 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }));
-
-// ⚠️ IMPORTANT: Stripe webhook MUST come BEFORE express.json()
-// Stripe needs raw body for signature verification
-app.post(
-  '/api/stripe',
-  express.raw({ type: "application/json" }),
-  stripeWebhooks
-);
-
-// Health check endpoint for webhook
-app.get('/api/stripe/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    webhookConfigured: !!process.env.STRIPE_WEBHOOK_SECRET,
-    stripeKeyConfigured: !!process.env.STRIPE_SECRET_KEY,
-    endpoint: '/api/stripe'
-  });
-});
 
 // Body parser middleware
 app.use(express.json())

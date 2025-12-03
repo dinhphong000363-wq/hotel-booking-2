@@ -51,7 +51,7 @@ export const getRooms = async (req, res) => {
         path: "hotel",
         populate: {
           path: "owner",
-          select: "image",
+          select: "name email avatar",
         },
       })
       .sort({ createdAt: -1 });

@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppContext } from '../conext/AppContext';
 import toast from 'react-hot-toast';
-import { cities } from '../assets/assets';
-import { districts } from '../utils/vietnamDistricts';
-import { streets, houseNumbers } from '../utils/vietnamStreets';
+import axios from 'axios';
 
 const HotelStatus = () => {
     const { axios, getToken, navigate, setHotelStatusUpdated } = useAppContext();
@@ -15,15 +13,108 @@ const HotelStatus = () => {
     // Edit form states
     const [editName, setEditName] = useState("");
     const [editContact, setEditContact] = useState("");
-    const [editCity, setEditCity] = useState("");
-    const [editDistrict, setEditDistrict] = useState("");
-    const [editStreet, setEditStreet] = useState("");
-    const [editHouseNumber, setEditHouseNumber] = useState("");
+    const [editProvinceCode, setEditProvinceCode] = useState("");
+    const [editProvinceName, setEditProvinceName] = useState("");
+    const [editWardCode, setEditWardCode] = useState("");
+    const [editWardName, setEditWardName] = useState("");
+    const [editAddressDetail, setEditAddressDetail] = useState("");
     const [updating, setUpdating] = useState(false);
+    const [contactError, setContactError] = useState("");
+
+    // API data
+    const [provinces, setProvinces] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [filteredWards, setFilteredWards] = useState([]);
+    const [wardSearch, setWardSearch] = useState("");
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingWards, setLoadingWards] = useState(false);
 
     useEffect(() => {
         fetchHotelStatus();
+        fetchProvinces();
     }, []);
+
+    // Fetch provinces
+    const fetchProvinces = async () => {
+        try {
+            setLoadingProvinces(true);
+            const response = await axios.get('https://provinces.open-api.vn/api/p/');
+            setProvinces(response.data);
+        } catch (error) {
+            console.error('Error fetching provinces:', error);
+        } finally {
+            setLoadingProvinces(false);
+        }
+    };
+
+    // Fetch wards when province changes
+    useEffect(() => {
+        const fetchWards = async () => {
+            if (!editProvinceCode || !showEditModal) {
+                setWards([]);
+                setFilteredWards([]);
+                return;
+            }
+
+            try {
+                setLoadingWards(true);
+                const response = await axios.get(`https://provinces.open-api.vn/api/p/${editProvinceCode}?depth=3`);
+                const allWards = [];
+                if (response.data.districts) {
+                    response.data.districts.forEach(district => {
+                        if (district.wards) {
+                            district.wards.forEach(ward => {
+                                allWards.push({
+                                    ...ward,
+                                    districtName: district.name
+                                });
+                            });
+                        }
+                    });
+                }
+                setWards(allWards);
+                setFilteredWards(allWards);
+            } catch (error) {
+                console.error('Error fetching wards:', error);
+            } finally {
+                setLoadingWards(false);
+            }
+        };
+        fetchWards();
+    }, [editProvinceCode, showEditModal]);
+
+    // Filter wards based on search
+    useEffect(() => {
+        if (!wardSearch.trim()) {
+            setFilteredWards(wards);
+            return;
+        }
+
+        const searchLower = wardSearch.toLowerCase();
+        const filtered = wards.filter(ward =>
+            ward.name.toLowerCase().includes(searchLower) ||
+            ward.districtName.toLowerCase().includes(searchLower)
+        );
+        setFilteredWards(filtered);
+    }, [wardSearch, wards]);
+
+    // Validate phone number
+    const validatePhoneNumber = (phone) => {
+        const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+
+        if (!/^\d{10,11}$/.test(cleanPhone)) {
+            return "Số điện thoại phải có 10-11 chữ số";
+        }
+
+        const validPrefixes = ['03', '05', '07', '08', '09', '01'];
+        const prefix = cleanPhone.substring(0, 2);
+
+        if (!validPrefixes.includes(prefix)) {
+            return "Số điện thoại không hợp lệ";
+        }
+
+        return "";
+    };
 
     const fetchHotelStatus = async () => {
         try {
@@ -43,10 +134,9 @@ const HotelStatus = () => {
                 // Set edit form values
                 setEditName(data.hotel.name || "");
                 setEditContact(data.hotel.contact || "");
-                setEditCity(data.hotel.city || "");
-                setEditDistrict(data.hotel.district || "");
-                setEditStreet(data.hotel.street || "");
-                setEditHouseNumber(data.hotel.houseNumber || "");
+                setEditProvinceName(data.hotel.city || "");
+                setEditWardName(data.hotel.district || "");
+                setEditAddressDetail(data.hotel.street || data.hotel.houseNumber || "");
             } else {
                 toast.error('Không tìm thấy thông tin khách sạn');
                 navigate('/');
@@ -79,21 +169,73 @@ const HotelStatus = () => {
         setShowCancelModal(false);
     };
 
+    const handleContactChange = (e) => {
+        let value = e.target.value;
+
+        // Only allow numbers
+        value = value.replace(/[^\d]/g, '');
+
+        // Limit to 11 digits
+        if (value.length > 11) {
+            value = value.slice(0, 11);
+        }
+
+        setEditContact(value);
+
+        if (value.trim()) {
+            const error = validatePhoneNumber(value);
+            setContactError(error);
+        } else {
+            setContactError("");
+        }
+    };
+
+    const handleProvinceChange = (e) => {
+        const selectedCode = e.target.value;
+        const selectedProvince = provinces.find(p => p.code.toString() === selectedCode);
+
+        setEditProvinceCode(selectedCode);
+        setEditProvinceName(selectedProvince ? selectedProvince.name : "");
+        setEditWardCode("");
+        setEditWardName("");
+        setWardSearch("");
+        setWards([]);
+        setFilteredWards([]);
+    };
+
+    const handleWardChange = (e) => {
+        const selectedCode = e.target.value;
+        const selectedWard = wards.find(w => w.code.toString() === selectedCode);
+
+        setEditWardCode(selectedCode);
+        setEditWardName(selectedWard ? selectedWard.name : "");
+    };
+
     const handleUpdateHotel = async (e) => {
         e.preventDefault();
+
+        // Validate phone before submit
+        const phoneError = validatePhoneNumber(editContact);
+        if (phoneError) {
+            setContactError(phoneError);
+            toast.error(phoneError);
+            return;
+        }
+
         try {
             setUpdating(true);
             const token = await getToken();
 
-            const fullAddress = `${editHouseNumber ? editHouseNumber + ', ' : ''}${editStreet ? editStreet + ', ' : ''}${editDistrict ? editDistrict + ', ' : ''}${editCity}`;
+            const fullAddress = `${editAddressDetail}, ${editWardName}, ${editProvinceName}`;
 
             const { data } = await axios.put('/api/hotels/owner/pending', {
                 name: editName,
                 contact: editContact,
-                city: editCity,
-                district: editDistrict,
-                street: editStreet,
-                houseNumber: editHouseNumber,
+                city: editProvinceName,
+                district: editWardName,
+                street: editAddressDetail,
+                houseNumber: '',
+                address: fullAddress,
                 fullAddress
             }, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -113,9 +255,6 @@ const HotelStatus = () => {
             setUpdating(false);
         }
     };
-
-    const availableDistricts = editCity ? (districts[editCity] || []) : [];
-    const availableStreets = (editCity && editDistrict) ? (streets[editCity]?.[editDistrict] || []) : [];
 
     if (loading) {
         return (
@@ -262,10 +401,7 @@ const HotelStatus = () => {
                             <div className="flex flex-col py-3 border-b">
                                 <span className="text-gray-600 font-medium mb-2">Địa chỉ:</span>
                                 <span className="text-gray-900 font-semibold">
-                                    {hotel.houseNumber && `${hotel.houseNumber}, `}
-                                    {hotel.street && `${hotel.street}, `}
-                                    {hotel.district && `${hotel.district}, `}
-                                    {hotel.city}
+                                    {hotel.fullAddress || hotel.address || `${hotel.street || hotel.houseNumber || ''}, ${hotel.district || ''}, ${hotel.city || ''}`}
                                 </span>
                             </div>
                             <div className="flex justify-between py-3">
@@ -326,111 +462,115 @@ const HotelStatus = () => {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
                                     <input
-                                        type="text"
+                                        type="tel"
                                         value={editContact}
-                                        onChange={(e) => setEditContact(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        onChange={handleContactChange}
+                                        maxLength={11}
+                                        className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${contactError
+                                            ? 'border-red-500 focus:ring-red-200'
+                                            : 'border-gray-300 focus:ring-indigo-500'
+                                            }`}
+                                        placeholder="Ví dụ: 0912345678"
                                         required
                                     />
+                                    {contactError && (
+                                        <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                            </svg>
+                                            {contactError}
+                                        </p>
+                                    )}
+                                    {!contactError && editContact && (
+                                        <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                            Số điện thoại hợp lệ
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Thành phố</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố</label>
                                     <select
-                                        value={editCity}
-                                        onChange={(e) => {
-                                            setEditCity(e.target.value);
-                                            setEditDistrict("");
-                                            setEditStreet("");
-                                        }}
+                                        value={editProvinceCode}
+                                        onChange={handleProvinceChange}
+                                        disabled={loadingProvinces}
                                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         required
                                     >
-                                        <option value="">Chọn thành phố</option>
-                                        {cities.map((city) => (
-                                            <option key={city} value={city}>{city}</option>
+                                        <option value="">
+                                            {loadingProvinces ? 'Đang tải...' : 'Chọn tỉnh/thành phố'}
+                                        </option>
+                                        {provinces.map((province) => (
+                                            <option key={province.code} value={province.code}>
+                                                {province.name}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
 
-                                {editCity && (
+                                {editProvinceCode && (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Quận/Huyện</label>
-                                        <select
-                                            value={editDistrict}
-                                            onChange={(e) => {
-                                                setEditDistrict(e.target.value);
-                                                setEditStreet("");
-                                            }}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            required
-                                        >
-                                            <option value="">Chọn quận/huyện</option>
-                                            {availableDistricts.map((dist) => (
-                                                <option key={dist} value={dist}>{dist}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Phường/Xã</label>
 
-                                {editDistrict && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Đường</label>
-                                        <select
-                                            value={editStreet}
-                                            onChange={(e) => setEditStreet(e.target.value)}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            required
-                                        >
-                                            <option value="">Chọn đường</option>
-                                            {availableStreets.length > 0 ? (
-                                                availableStreets.map((str) => (
-                                                    <option key={str} value={str}>{str}</option>
-                                                ))
-                                            ) : (
-                                                <option value="" disabled>Chưa có dữ liệu đường</option>
-                                            )}
-                                        </select>
-                                        {availableStreets.length === 0 && (
+                                        {/* Search input */}
+                                        {wards.length > 0 && (
                                             <input
                                                 type="text"
-                                                placeholder="Nhập tên đường"
-                                                value={editStreet}
-                                                onChange={(e) => setEditStreet(e.target.value)}
-                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                placeholder="Tìm kiếm phường/xã..."
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                                value={wardSearch}
+                                                onChange={(e) => setWardSearch(e.target.value)}
                                             />
+                                        )}
+
+                                        <select
+                                            value={editWardCode}
+                                            onChange={handleWardChange}
+                                            disabled={loadingWards}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            required
+                                        >
+                                            <option value="">
+                                                {loadingWards ? 'Đang tải...' : 'Chọn phường/xã'}
+                                            </option>
+                                            {filteredWards.map((ward) => (
+                                                <option key={ward.code} value={ward.code}>
+                                                    {ward.name} - {ward.districtName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {wardSearch && filteredWards.length === 0 && wards.length > 0 && (
+                                            <p className="text-sm text-red-500 mt-1">
+                                                Không tìm thấy phường/xã phù hợp
+                                            </p>
                                         )}
                                     </div>
                                 )}
 
-                                {editStreet && (
+                                {editWardCode && (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Số nhà</label>
-                                        <select
-                                            value={editHouseNumber}
-                                            onChange={(e) => setEditHouseNumber(e.target.value)}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            required
-                                        >
-                                            <option value="">Chọn số nhà</option>
-                                            {houseNumbers.map((num) => (
-                                                <option key={num} value={num}>{num}</option>
-                                            ))}
-                                        </select>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Số nhà, tên đường</label>
                                         <input
                                             type="text"
-                                            placeholder="Hoặc nhập số nhà khác"
-                                            value={editHouseNumber}
-                                            onChange={(e) => setEditHouseNumber(e.target.value)}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            placeholder="Ví dụ: 123 Nguyễn Huệ"
+                                            value={editAddressDetail}
+                                            onChange={(e) => setEditAddressDetail(e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            required
                                         />
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Nhập số nhà và tên đường của khách sạn
+                                        </p>
                                     </div>
                                 )}
 
                                 <div className="flex gap-3 pt-4">
                                     <button
                                         type="submit"
-                                        disabled={updating}
+                                        disabled={updating || !!contactError}
                                         className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-all disabled:opacity-50"
                                     >
                                         {updating ? 'Đang cập nhật...' : 'Cập nhật'}

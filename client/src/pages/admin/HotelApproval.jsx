@@ -98,7 +98,7 @@ const HotelApproval = () => {
     return (
         <div>
             <h1 className="text-2xl font-bold mb-6">Duyệt Khách Sạn</h1>
-            
+
             {hotels.length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
                     Không có khách sạn nào đang chờ duyệt
@@ -116,7 +116,7 @@ const HotelApproval = () => {
                                         <p><span className="font-medium">Liên hệ:</span> {hotel.contact}</p>
                                         {hotel.owner && (
                                             <div className="mt-3 pt-3 border-t">
-                                                <p className="font-medium text-gray-700">Chủ khách sạn:</p>
+                                                <p className="font-medium text-gray-700">Hotel Manager:</p>
                                                 <p className="text-sm">{hotel.owner.username}</p>
                                                 <p className="text-sm text-gray-500">{hotel.owner.email}</p>
                                             </div>
