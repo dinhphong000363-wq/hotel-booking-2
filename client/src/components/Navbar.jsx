@@ -5,6 +5,7 @@ import { useAppContext } from "../conext/AppContext";
 import UserMenu from "./UserMenu";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
+import SearchModal from "./SearchModal";
 
 const BookIcon = () => {
     return (
@@ -62,6 +63,7 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [hotelStatus, setHotelStatus] = useState(null); // null, 'pending', 'approved', 'rejected'
     const [loadingHotelStatus, setLoadingHotelStatus] = useState(false);
+    const [showSearchModal, setShowSearchModal] = useState(false);
     const location = useLocation();
     const {
         user,
@@ -122,6 +124,18 @@ const Navbar = () => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, [location.pathname]);
+
+    // Keyboard shortcut: Ctrl+K to open search
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+                e.preventDefault();
+                setShowSearchModal(true);
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, []);
 
     return (
         <nav
@@ -209,12 +223,21 @@ const Navbar = () => {
 
             {/* Desktop Right */}
             <div className="hidden md:flex items-center gap-4">
-                <img
-                    src={assets.searchIcon}
-                    alt="search"
-                    className={`${isScrolled && "invert"
-                        } h-7 transition-all duration-500`}
-                />
+                <button
+                    onClick={() => setShowSearchModal(true)}
+                    className="relative group"
+                    title="Tìm kiếm (Ctrl+K)"
+                >
+                    <img
+                        src={assets.searchIcon}
+                        alt="search"
+                        className={`${isScrolled && "invert"
+                            } h-7 transition-all duration-500 cursor-pointer hover:scale-110`}
+                    />
+                    <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        Ctrl+K
+                    </span>
+                </button>
 
                 {user ? (
                     <UserMenu user={user}>
@@ -252,6 +275,13 @@ const Navbar = () => {
 
             {/* Mobile Menu Button */}
             <div className="flex items-center gap-3 md:hidden">
+                <button onClick={() => setShowSearchModal(true)}>
+                    <img
+                        src={assets.searchIcon}
+                        alt="search"
+                        className={`${isScrolled && "invert"} h-6 cursor-pointer`}
+                    />
+                </button>
                 {user && (
                     <UserMenu user={user}>
                         <button
@@ -378,6 +408,12 @@ const Navbar = () => {
                     setShowRegisterModal(false);
                     setShowLoginModal(true);
                 }}
+            />
+
+            {/* Search Modal */}
+            <SearchModal
+                isOpen={showSearchModal}
+                onClose={() => setShowSearchModal(false)}
             />
         </nav>
     );

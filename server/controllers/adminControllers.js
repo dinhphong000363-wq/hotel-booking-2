@@ -7,7 +7,7 @@ import Booking from "../models/Booking.js";
 export const getPendingHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find({ status: "pending" })
-      .populate("owner", "username email avatar")
+      .populate("owner", "name email avatar")
       .sort({ createdAt: -1 });
 
     res.json({ success: true, hotels });
@@ -123,7 +123,7 @@ export const deleteUser = async (req, res) => {
 export const getAllHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find({})
-      .populate("owner", "username email avatar")
+      .populate("owner", "name email avatar")
       .sort({ createdAt: -1 });
 
     // Get first room image, room count, booking count, and revenue for each hotel
@@ -300,7 +300,7 @@ export const getDashboardStats = async (req, res) => {
 
     // Pending hotels (latest 5)
     const pendingHotels = await Hotel.find({ status: "pending" })
-      .populate("owner", "username email avatar")
+      .populate("owner", "name email avatar")
       .sort({ createdAt: -1 })
       .limit(5);
 

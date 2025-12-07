@@ -22,7 +22,7 @@ const BookingDetailModal = ({ booking, onClose }) => {
           <div><span className='text-gray-500'>Số khách:</span> {guests}</div>
           <div><span className='text-gray-500'>Nhận phòng:</span> {new Date(checkInDate).toLocaleString('vi-VN')}</div>
           <div><span className='text-gray-500'>Trả phòng:</span> {new Date(checkOutDate).toLocaleString('vi-VN')}</div>
-          <div><span className='text-gray-500'>Tổng tiền:</span> {totalPrice}</div>
+          <div><span className='text-gray-500'>Tổng tiền:</span> ${Number(totalPrice || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <div><span className='text-gray-500'>Thanh toán:</span> {translatePaymentStatus(isPaid)}{paymentMethod ? ` (${translatePaymentMethod(paymentMethod)})` : ''}</div>
           <div><span className='text-gray-500'>Trạng thái:</span> {translateBookingStatus(status)}</div>
         </div>

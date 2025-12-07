@@ -324,7 +324,7 @@ const AdminDashboard = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-semibold">Khách sạn chờ duyệt</h2>
                         <button
-                            onClick={() => navigate('/admin')}
+                            onClick={() => navigate('/admin/approval')}
                             className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                         >
                             Xem tất cả →

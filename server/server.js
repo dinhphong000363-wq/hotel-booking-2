@@ -15,6 +15,7 @@ import adminRouter from "./routes/adminRoutes.js";
 import ownerRouter from "./routes/ownerRoutes.js";
 import chatbotRouter from "./routes/chatbotRoutes.js";
 import authRouter from "./routes/authRoutes.js";
+import searchRouter from "./routes/searchRoutes.js";
 
 connectDB()
 connectCloudinary()
@@ -56,6 +57,7 @@ app.use("/api/reviews", reviewRouter)
 app.use("/api/admin", adminRouter)
 app.use("/api/owner", ownerRouter)
 app.use("/api/chatbot", chatbotRouter)
+app.use("/api/search", searchRouter)
 
 
 

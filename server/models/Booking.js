@@ -23,6 +23,13 @@ const bookingSchema = new mongoose.Schema(
 
         isPaid: { type: Boolean, default: false },
 
+        // Cancellation fields
+        cancelledAt: { type: Date },
+        cancelledBy: { type: String, ref: "User" },
+        cancellationReason: { type: String },
+        refundAmount: { type: Number, default: 0 },
+        refundPercentage: { type: Number, default: 0 },
+
     },
     { timestamps: true }
 );

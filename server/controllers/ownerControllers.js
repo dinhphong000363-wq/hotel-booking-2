@@ -86,7 +86,7 @@ export const getOwnerDashboardStats = async (req, res) => {
 
     // Get reviews for owner's rooms
     const reviews = await Review.find({ room: { $in: roomIdStrings } })
-      .populate("user", "username avatar")
+      .populate("user", "name avatar")
       .populate("room", "roomType")
       .sort({ createdAt: -1 })
       .limit(10);
@@ -144,7 +144,7 @@ export const getOwnerReviews = async (req, res) => {
     const roomIdStrings = roomIds.map(r => r._id.toString());
 
     const reviews = await Review.find({ room: { $in: roomIdStrings } })
-      .populate("user", "username avatar email")
+      .populate("user", "name avatar email")
       .populate("room", "roomType")
       .sort({ createdAt: -1 });
 

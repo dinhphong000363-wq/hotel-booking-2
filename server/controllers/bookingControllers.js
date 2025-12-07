@@ -56,7 +56,11 @@ export const createBooking = async (req, res) => {
         // Lấy totalPrice từ Room
         const roomData = await Room.findById(room).populate("hotel");
 
-        let totalPrice = roomData.pricePerNight;
+        // Tính giá sau khi áp dụng discount (nếu có)
+        let pricePerNight = roomData.pricePerNight;
+        if (roomData.discount && roomData.discount > 0) {
+            pricePerNight = roomData.pricePerNight * (1 - roomData.discount / 100);
+        }
 
         // Tính tổng giá dựa trên số đêm
         const checkIn = new Date(checkInDate);
@@ -64,7 +68,7 @@ export const createBooking = async (req, res) => {
         const timeDiff = checkOut.getTime() - checkIn.getTime();
 
         const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        totalPrice *= nights;
+        const totalPrice = pricePerNight * nights;
         const booking = await Booking.create({
             user,
             room,
@@ -218,12 +222,21 @@ export const updateBookingStatus = async (req, res) => {
             return res.json({ success: false, message: "Đặt phòng đã hoàn thành" });
         }
 
+        // Kiểm tra khi chuyển sang completed: phải đã thanh toán
+        if (status === "completed" && !booking.isPaid) {
+            return res.json({ success: false, message: "Không thể hoàn thành: Khách hàng chưa thanh toán" });
+        }
+
         booking.status = status;
         await booking.save();
 
+        // Populate đầy đủ thông tin trước khi trả về
+        await booking.populate("user", "username email");
+        await booking.populate("room", "images roomType");
+        await booking.populate("hotel", "name");
+
         // Create notification for user about status change
-        const bookingWithUser = await Booking.findById(id).populate("user");
-        if (bookingWithUser && bookingWithUser.user) {
+        if (booking.user) {
             const statusMessages = {
                 confirmed: "Đặt phòng của bạn đã được xác nhận",
                 cancelled: "Đặt phòng của bạn đã bị hủy",
@@ -231,7 +244,7 @@ export const updateBookingStatus = async (req, res) => {
             };
 
             await Notification.create({
-                user: bookingWithUser.user._id,
+                user: booking.user._id,
                 type: `booking_${status}`,
                 title: "Cập nhật trạng thái đặt phòng",
                 message: statusMessages[status] || "Trạng thái đặt phòng đã được cập nhật",
@@ -268,6 +281,10 @@ export const updateBooking = async (req, res) => {
         // Cập nhật các trường được cho phép
         if (isPaid !== undefined) {
             booking.isPaid = isPaid;
+            // Tự động chuyển status sang confirmed khi thanh toán thành công
+            if (isPaid === true && booking.status === 'pending') {
+                booking.status = 'confirmed';
+            }
         }
         if (paymentMethod) {
             booking.paymentMethod = paymentMethod;
@@ -308,6 +325,244 @@ export const deleteBooking = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Failed to delete booking" });
+    }
+};
+
+// API để hủy đặt phòng (Customer)
+// POST /api/bookings/:id/cancel
+export const cancelBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user._id;
+        const { cancellationReason } = req.body;
+
+        // Tìm booking
+        const booking = await Booking.findById(id).populate("room hotel user");
+
+        if (!booking) {
+            return res.json({ success: false, message: "Đặt phòng không tồn tại" });
+        }
+
+        // Kiểm tra quyền hủy
+        if (booking.user._id.toString() !== userId.toString()) {
+            return res.json({ success: false, message: "Không có quyền hủy đặt phòng này" });
+        }
+
+        // Kiểm tra điều kiện hủy
+        if (booking.status === "cancelled") {
+            return res.json({ success: false, message: "Đặt phòng đã được hủy trước đó" });
+        }
+
+        if (booking.status === "completed") {
+            return res.json({ success: false, message: "Không thể hủy đặt phòng đã hoàn thành" });
+        }
+
+        // Kiểm tra không hủy sau khi check-in
+        const now = new Date();
+        const checkInDate = new Date(booking.checkInDate);
+
+        if (now >= checkInDate) {
+            return res.json({ success: false, message: "Không thể hủy sau ngày nhận phòng" });
+        }
+
+        // Tính chính sách hoàn tiền
+        const hoursUntilCheckIn = (checkInDate - now) / (1000 * 60 * 60);
+        let refundPercentage = 0;
+
+        if (hoursUntilCheckIn >= 168) { // 7 ngày
+            refundPercentage = 100;
+        } else if (hoursUntilCheckIn >= 72) { // 3 ngày
+            refundPercentage = 50;
+        } else if (hoursUntilCheckIn >= 24) { // 1 ngày
+            refundPercentage = 25;
+        } else {
+            refundPercentage = 0;
+        }
+
+        // Tính số tiền hoàn (chỉ nếu đã thanh toán)
+        const refundAmount = booking.isPaid ? (booking.totalPrice * refundPercentage) / 100 : 0;
+
+        // Cập nhật booking
+        booking.status = "cancelled";
+        booking.cancelledAt = now;
+        booking.cancelledBy = userId;
+        booking.cancellationReason = cancellationReason || "";
+        booking.refundAmount = refundAmount;
+        booking.refundPercentage = refundPercentage;
+
+        await booking.save();
+
+        // Gửi email cho khách hàng
+        const mailOptionCustomer = {
+            from: process.env.SENDER_EMAIL,
+            to: booking.user.email,
+            subject: "Xác nhận hủy đặt phòng",
+            html: `
+                <h2>Đặt phòng đã được hủy</h2>
+                <p>Xin chào ${booking.user.username},</p>
+                <p>Đặt phòng của bạn đã được hủy thành công.</p>
+                <ul>
+                    <li><strong>Mã đặt phòng:</strong> ${booking._id}</li>
+                    <li><strong>Khách sạn:</strong> ${booking.hotel.name}</li>
+                    <li><strong>Ngày nhận phòng:</strong> ${checkInDate.toLocaleDateString('vi-VN')}</li>
+                    <li><strong>Tổng tiền:</strong> ${booking.totalPrice.toLocaleString('vi-VN')} VND</li>
+                    <li><strong>Số tiền hoàn:</strong> ${refundAmount.toLocaleString('vi-VN')} VND (${refundPercentage}%)</li>
+                    ${cancellationReason ? `<li><strong>Lý do hủy:</strong> ${cancellationReason}</li>` : ''}
+                </ul>
+                ${refundAmount > 0 ? '<p>Số tiền hoàn sẽ được xử lý trong vòng 5-7 ngày làm việc.</p>' : ''}
+                <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptionCustomer);
+
+        // Gửi email cho chủ khách sạn
+        const hotel = await Hotel.findById(booking.hotel._id).populate("owner");
+        if (hotel && hotel.owner && hotel.owner.email) {
+            const mailOptionOwner = {
+                from: process.env.SENDER_EMAIL,
+                to: hotel.owner.email,
+                subject: "Thông báo hủy đặt phòng",
+                html: `
+                    <h2>Đặt phòng bị hủy</h2>
+                    <p>Xin chào ${hotel.owner.username},</p>
+                    <p>Một đặt phòng tại khách sạn của bạn đã bị hủy.</p>
+                    <ul>
+                        <li><strong>Mã đặt phòng:</strong> ${booking._id}</li>
+                        <li><strong>Khách hàng:</strong> ${booking.user.username}</li>
+                        <li><strong>Loại phòng:</strong> ${booking.room.roomType}</li>
+                        <li><strong>Ngày nhận phòng:</strong> ${checkInDate.toLocaleDateString('vi-VN')}</li>
+                        <li><strong>Tổng tiền:</strong> ${booking.totalPrice.toLocaleString('vi-VN')} VND</li>
+                        ${cancellationReason ? `<li><strong>Lý do hủy:</strong> ${cancellationReason}</li>` : ''}
+                    </ul>
+                `
+            };
+
+            await transporter.sendMail(mailOptionOwner);
+
+            // Tạo notification cho chủ khách sạn
+            await Notification.create({
+                user: hotel.owner._id,
+                type: "booking_cancelled",
+                title: "Đặt phòng bị hủy",
+                message: `Khách hàng ${booking.user.username} đã hủy đặt phòng ${booking.room.roomType}`,
+                relatedId: booking._id.toString(),
+            });
+        }
+
+        // Tạo notification cho khách hàng
+        await Notification.create({
+            user: booking.user._id,
+            type: "booking_cancelled",
+            title: "Đặt phòng đã hủy",
+            message: `Đặt phòng tại ${booking.hotel.name} đã được hủy. Hoàn ${refundPercentage}% (${refundAmount.toLocaleString('vi-VN')} VND)`,
+            relatedId: booking._id.toString(),
+        });
+
+        res.json({
+            success: true,
+            message: "Đã hủy đặt phòng thành công",
+            booking,
+            refundInfo: {
+                refundAmount,
+                refundPercentage
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Không thể hủy đặt phòng" });
+    }
+};
+
+// API để chủ khách sạn hủy đặt phòng
+// POST /api/bookings/:id/cancel-by-owner
+export const cancelBookingByOwner = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const ownerId = req.user._id;
+        const { cancellationReason } = req.body;
+
+        // Tìm booking
+        const booking = await Booking.findById(id).populate("room hotel user");
+
+        if (!booking) {
+            return res.json({ success: false, message: "Đặt phòng không tồn tại" });
+        }
+
+        // Kiểm tra quyền hủy
+        const hotel = await Hotel.findById(booking.hotel._id);
+        if (!hotel || hotel.owner.toString() !== ownerId.toString()) {
+            return res.json({ success: false, message: "Không có quyền hủy đặt phòng này" });
+        }
+
+        // Kiểm tra điều kiện hủy
+        if (booking.status === "cancelled") {
+            return res.json({ success: false, message: "Đặt phòng đã được hủy trước đó" });
+        }
+
+        if (booking.status === "completed") {
+            return res.json({ success: false, message: "Không thể hủy đặt phòng đã hoàn thành" });
+        }
+
+        // Chủ khách sạn hủy: hoàn 100% nếu đã thanh toán
+        const refundPercentage = 100;
+        const refundAmount = booking.isPaid ? booking.totalPrice : 0;
+
+        // Cập nhật booking
+        booking.status = "cancelled";
+        booking.cancelledAt = new Date();
+        booking.cancelledBy = ownerId;
+        booking.cancellationReason = cancellationReason || "Hủy bởi chủ khách sạn";
+        booking.refundAmount = refundAmount;
+        booking.refundPercentage = refundPercentage;
+
+        await booking.save();
+
+        // Gửi email cho khách hàng
+        const mailOptionCustomer = {
+            from: process.env.SENDER_EMAIL,
+            to: booking.user.email,
+            subject: "Thông báo hủy đặt phòng",
+            html: `
+                <h2>Đặt phòng đã bị hủy</h2>
+                <p>Xin chào ${booking.user.username},</p>
+                <p>Rất tiếc, đặt phòng của bạn đã bị hủy bởi khách sạn.</p>
+                <ul>
+                    <li><strong>Mã đặt phòng:</strong> ${booking._id}</li>
+                    <li><strong>Khách sạn:</strong> ${booking.hotel.name}</li>
+                    <li><strong>Ngày nhận phòng:</strong> ${new Date(booking.checkInDate).toLocaleDateString('vi-VN')}</li>
+                    <li><strong>Tổng tiền:</strong> ${booking.totalPrice.toLocaleString('vi-VN')} VND</li>
+                    <li><strong>Số tiền hoàn:</strong> ${refundAmount.toLocaleString('vi-VN')} VND (100%)</li>
+                    ${cancellationReason ? `<li><strong>Lý do:</strong> ${cancellationReason}</li>` : ''}
+                </ul>
+                ${refundAmount > 0 ? '<p>Số tiền hoàn sẽ được xử lý trong vòng 5-7 ngày làm việc.</p>' : ''}
+                <p>Chúng tôi xin lỗi vì sự bất tiện này!</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptionCustomer);
+
+        // Tạo notification cho khách hàng
+        await Notification.create({
+            user: booking.user._id,
+            type: "booking_cancelled",
+            title: "Đặt phòng bị hủy",
+            message: `Đặt phòng tại ${booking.hotel.name} đã bị hủy bởi khách sạn. Hoàn 100%`,
+            relatedId: booking._id.toString(),
+        });
+
+        res.json({
+            success: true,
+            message: "Đã hủy đặt phòng thành công",
+            booking,
+            refundInfo: {
+                refundAmount,
+                refundPercentage
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Không thể hủy đặt phòng" });
     }
 };
 

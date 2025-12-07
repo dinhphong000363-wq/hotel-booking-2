@@ -538,13 +538,13 @@ const RoomsTails = () => {
                                     <div className="flex items-center justify-between gap-3">
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={review.user?.image || assets.userIcon}
-                                                alt={review.user?.username || 'Ẩn danh'}
+                                                src={review.user?.avatar || assets.userIcon}
+                                                alt={review.user?.name || 'Ẩn danh'}
                                                 className="w-12 h-12 rounded-full object-cover border border-gray-200"
                                             />
                                             <div>
                                                 <p className="font-medium text-gray-800">
-                                                    {review.user?.username || 'Ẩn danh'}
+                                                    {review.user?.name || 'Ẩn danh'}
                                                 </p>
                                                 <p className="text-xs text-gray-400">
                                                     {new Date(review.createdAt).toLocaleDateString('vi-VN')}

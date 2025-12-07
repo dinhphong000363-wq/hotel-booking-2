@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { assets, facilityIcons, roomsDummyData } from '../assets/assets'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAppContext } from '../conext/AppContext';
 import { translateAmenity, translateRoomType } from '../utils/translations';
 import Footer from '../components/Footer';
+import toast from 'react-hot-toast';
 const StaticRating = () => (
     <div className="flex">
         {Array(5)
@@ -50,13 +51,16 @@ const RadioButton = ({ label, value, selected = false, onChange = () => { } }) =
 
 const AllRooms = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const { rooms, navigate, currency } = useAppContext()
+    const { rooms: defaultRooms, navigate, currency, axios } = useAppContext()
+    const [rooms, setRooms] = useState(defaultRooms)
+    const [loading, setLoading] = useState(false)
     const [openFilters, setOpenFilters] = useState(false)
     const [selectedFilters, setSelectedFilters] = useState({
         roomType: [],
         priceRange: [],
     })
     const [selectedSort, setSelectedSort] = useState('')
+    const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
     const roomTypes = [
         { value: "Single Bed", label: "Phòng một giường" },
         { value: "Double Bed", label: "Phòng giường đôi" },
@@ -128,27 +132,57 @@ const AllRooms = () => {
 
         return 0;
     };
-    // Lọc đích
-    const filterDestination = (room) => {
-        const destination = searchParams.get('destination');
-        if (!destination) return true;
-
-        return room.hotel?.city
-            ?.toLowerCase()
-            ?.includes(destination.toLowerCase()) || false;
-    };
-
     // Lọc và sắp xếp phòng dựa trên bộ lọc đã chọn và tùy chọn sắp xếp
+    // Không cần lọc destination nữa vì API đã lọc rồi
     const filteredRooms = useMemo(() => {
         return rooms
             .filter(
                 (room) =>
                     matchesRoomType(room) &&
-                    matchesPriceRange(room) &&
-                    filterDestination(room)
+                    matchesPriceRange(room)
             )
             .sort(sortRooms);
-    }, [rooms, selectedFilters, selectedSort, searchParams]);
+    }, [rooms, selectedFilters, selectedSort]);
+    // Load search results from URL params
+    useEffect(() => {
+        const loadSearchResults = async () => {
+            const destination = searchParams.get('destination');
+            const checkIn = searchParams.get('checkIn');
+            const checkOut = searchParams.get('checkOut');
+            const guests = searchParams.get('guests');
+            const onlyAvailable = searchParams.get('onlyAvailable');
+
+            if (destination || checkIn || checkOut) {
+                setLoading(true);
+                try {
+                    const params = new URLSearchParams();
+                    if (destination) params.append('destination', destination);
+                    if (checkIn) params.append('checkIn', checkIn);
+                    if (checkOut) params.append('checkOut', checkOut);
+                    if (guests) params.append('guests', guests);
+                    if (onlyAvailable) params.append('onlyAvailable', onlyAvailable);
+
+                    const { data } = await axios.get(`/api/search/rooms?${params.toString()}`);
+
+                    if (data.success) {
+                        setRooms(data.rooms);
+                        setShowOnlyAvailable(onlyAvailable === 'true');
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                    toast.error('Lỗi khi tìm kiếm phòng');
+                    setRooms(defaultRooms);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setRooms(defaultRooms);
+            }
+        };
+
+        loadSearchResults();
+    }, [searchParams, defaultRooms, axios]);
+
     // Xóa tất cả bộ lọc
     const clearFilters = () => {
         setSelectedFilters({
@@ -158,6 +192,7 @@ const AllRooms = () => {
 
         setSelectedSort('');
         setSearchParams({});
+        setShowOnlyAvailable(false);
     };
 
 
@@ -174,17 +209,43 @@ const AllRooms = () => {
                             Phòng khách sạn
                         </h1>
                         <p className="text-sm md:text-base text-gray-500 mt-3 max-w-2xl leading-relaxed">
-                            Hãy tận dụng các ưu đãi có thời hạn và gói đặc biệt của chúng tôi để nâng tầm kỳ nghỉ của bạn
-                            và tạo nên những kỷ niệm khó quên.
+                            {searchParams.get('destination')
+                                ? `Kết quả tìm kiếm cho "${searchParams.get('destination')}" - ${filteredRooms.length} phòng`
+                                : 'Hãy tận dụng các ưu đãi có thời hạn và gói đặc biệt của chúng tôi để nâng tầm kỳ nghỉ của bạn và tạo nên những kỷ niệm khó quên.'}
                         </p>
                         <div className="mt-1 w-24 h-[2px] bg-indigo-500 rounded-full"></div>
                     </div>
 
-                    {filteredRooms.map((room) => {
+                    {loading && (
+                        <div className="flex justify-center items-center py-20">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                        </div>
+                    )}
+
+                    {!loading && filteredRooms.length === 0 && (
+                        <div className="text-center py-20">
+                            <img src={assets.searchIcon} alt="no results" className="h-20 w-20 mx-auto opacity-30 mb-4" />
+                            <h3 className="text-xl font-semibold text-gray-700 mb-2">Không tìm thấy phòng</h3>
+                            <p className="text-gray-500 mb-6">Thử điều chỉnh bộ lọc hoặc tìm kiếm khác</p>
+                            <button
+                                onClick={clearFilters}
+                                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                            >
+                                Xóa bộ lọc
+                            </button>
+                        </div>
+                    )}
+
+                    {!loading && filteredRooms.map((room) => {
                         const hasDiscount = room.discount && room.discount > 0;
                         const discountedPrice = hasDiscount
                             ? room.pricePerNight * (1 - room.discount / 100)
                             : room.pricePerNight;
+
+                        // Availability info
+                        const hasAvailabilityInfo = room.availableRooms !== undefined;
+                        const isFullyBooked = room.isFullyBooked || false;
+                        const availableCount = room.availableRooms || 0;
 
                         return (
                             <div
@@ -206,6 +267,23 @@ const AllRooms = () => {
                                         <p className="absolute top-3 right-3 px-3 py-1 text-xs bg-rose-500 text-white font-bold rounded-full shadow-lg">
                                             -{room.discount}%
                                         </p>
+                                    )}
+                                    {hasAvailabilityInfo && (
+                                        <div className="absolute bottom-3 left-3">
+                                            {isFullyBooked ? (
+                                                <p className="px-3 py-1 text-xs bg-red-500 text-white font-semibold rounded-full shadow-lg">
+                                                    Đã đầy
+                                                </p>
+                                            ) : availableCount <= 2 ? (
+                                                <p className="px-3 py-1 text-xs bg-orange-500 text-white font-semibold rounded-full shadow-lg">
+                                                    Chỉ còn {availableCount} phòng
+                                                </p>
+                                            ) : (
+                                                <p className="px-3 py-1 text-xs bg-green-500 text-white font-semibold rounded-full shadow-lg">
+                                                    Còn {availableCount} phòng
+                                                </p>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
 
