@@ -140,51 +140,7 @@ npm install
 ### Server (.env)
 Create a `.env` file in the `server` directory:
 
-```env
-# Server
-PORT=5000
-NODE_ENV=development
 
-# Database
-MONGODB_URI=your_mongodb_connection_string
-
-# JWT
-JWT_SECRET=your_jwt_secret_key
-
-# Session
-SESSION_SECRET=your_session_secret_key
-
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
-
-# Facebook OAuth
-FACEBOOK_APP_ID=your_facebook_app_id
-FACEBOOK_APP_SECRET=your_facebook_app_secret
-FACEBOOK_CALLBACK_URL=http://localhost:5000/api/auth/facebook/callback
-
-# Email (Nodemailer)
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_app_password
-
-# Google Gemini AI
-GEMINI_API_KEY=your_gemini_api_key
-
-# Client URL
-CLIENT_URL=http://localhost:5173
-
-# Payment (Optional)
-STRIPE_SECRET_KEY=your_stripe_secret_key
-MOMO_PARTNER_CODE=your_momo_partner_code
-MOMO_ACCESS_KEY=your_momo_access_key
-MOMO_SECRET_KEY=your_momo_secret_key
-```
 
 ### Client (.env)
 Create a `.env` file in the `client` directory:
