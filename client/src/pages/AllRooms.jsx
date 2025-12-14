@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { assets, facilityIcons, roomsDummyData } from '../assets/assets'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useAppContext } from '../conext/AppContext';
+import { useAppContext } from '../context/AppContext';
 import { translateAmenity, translateRoomType } from '../utils/translations';
-import Footer from '../components/Footer';
+import Footer from '../components/layout/Footer';
 import toast from 'react-hot-toast';
 const StaticRating = () => (
     <div className="flex">
@@ -51,7 +51,7 @@ const RadioButton = ({ label, value, selected = false, onChange = () => { } }) =
 
 const AllRooms = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const { rooms: defaultRooms, navigate, currency, axios } = useAppContext()
+    const { rooms: defaultRooms, navigate, currency, axios, hotelStatusUpdated } = useAppContext()
     const [rooms, setRooms] = useState(defaultRooms)
     const [loading, setLoading] = useState(false)
     const [openFilters, setOpenFilters] = useState(false)
@@ -61,6 +61,8 @@ const AllRooms = () => {
     })
     const [selectedSort, setSelectedSort] = useState('')
     const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const roomsPerPage = 6
     const roomTypes = [
         { value: "Single Bed", label: "Phòng một giường" },
         { value: "Double Bed", label: "Phòng giường đôi" },
@@ -143,6 +145,23 @@ const AllRooms = () => {
             )
             .sort(sortRooms);
     }, [rooms, selectedFilters, selectedSort]);
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredRooms.length / roomsPerPage);
+    const indexOfLastRoom = currentPage * roomsPerPage;
+    const indexOfFirstRoom = indexOfLastRoom - roomsPerPage;
+    const currentRooms = filteredRooms.slice(indexOfFirstRoom, indexOfLastRoom);
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedFilters, selectedSort, rooms]);
+
+    // Update rooms when defaultRooms changes (e.g., after hotel info update)
+    useEffect(() => {
+        setRooms(defaultRooms);
+    }, [defaultRooms, hotelStatusUpdated]);
+
     // Load search results from URL params
     useEffect(() => {
         const loadSearchResults = async () => {
@@ -236,7 +255,7 @@ const AllRooms = () => {
                         </div>
                     )}
 
-                    {!loading && filteredRooms.map((room) => {
+                    {!loading && currentRooms.map((room) => {
                         const hasDiscount = room.discount && room.discount > 0;
                         const discountedPrice = hasDiscount
                             ? room.pricePerNight * (1 - room.discount / 100)
@@ -348,6 +367,73 @@ const AllRooms = () => {
                             </div>
                         )
                     })}
+
+                    {/* Pagination Controls */}
+                    {!loading && filteredRooms.length > roomsPerPage && (
+                        <div className="col-span-full mt-8 flex flex-col items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                {/* Previous Button */}
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-4 py-2 rounded-lg border-2 border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    Trước
+                                </button>
+
+                                {/* Page Numbers */}
+                                <div className="flex items-center gap-2">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                                        // Show first page, last page, current page, and pages around current
+                                        if (
+                                            page === 1 ||
+                                            page === totalPages ||
+                                            (page >= currentPage - 1 && page <= currentPage + 1)
+                                        ) {
+                                            return (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => setCurrentPage(page)}
+                                                    className={`w-10 h-10 rounded-lg font-semibold transition-all ${currentPage === page
+                                                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                                                            : 'bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                        }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            );
+                                        } else if (
+                                            page === currentPage - 2 ||
+                                            page === currentPage + 2
+                                        ) {
+                                            return <span key={page} className="text-gray-400">...</span>;
+                                        }
+                                        return null;
+                                    })}
+                                </div>
+
+                                {/* Next Button */}
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-4 py-2 rounded-lg border-2 border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                >
+                                    Sau
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Page Info */}
+                            <p className="text-sm text-gray-600">
+                                Hiển thị <span className="font-semibold text-gray-800">{indexOfFirstRoom + 1}</span> - <span className="font-semibold text-gray-800">{Math.min(indexOfLastRoom, filteredRooms.length)}</span> trong tổng số <span className="font-semibold text-gray-800">{filteredRooms.length}</span> phòng
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* --- BỘ LỌC --- */}

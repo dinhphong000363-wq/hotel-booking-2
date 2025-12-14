@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useAppContext } from "../conext/AppContext";
-import { assets } from "../assets/assets";
+import { useAppContext } from '../../context/AppContext';
+import { assets } from "../../assets/assets";
 
 const AlternativeDatesModal = ({ isOpen, onClose, roomId, checkIn, checkOut }) => {
     const { axios } = useAppContext();

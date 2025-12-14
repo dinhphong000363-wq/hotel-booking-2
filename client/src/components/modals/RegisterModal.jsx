@@ -13,6 +13,24 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [phoneError, setPhoneError] = useState('');
+
+    const validatePhoneNumber = (phone) => {
+        const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+
+        if (!/^\d{10,11}$/.test(cleanPhone)) {
+            return "Số điện thoại phải có 10-11 chữ số";
+        }
+
+        const validPrefixes = ['03', '05', '07', '08', '09', '01'];
+        const prefix = cleanPhone.substring(0, 2);
+
+        if (!validPrefixes.includes(prefix)) {
+            return "Số điện thoại không hợp lệ";
+        }
+
+        return "";
+    };
 
     const handleChange = (e) => {
         setFormData({
@@ -21,11 +39,42 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         });
     };
 
+    const handlePhoneChange = (e) => {
+        let value = e.target.value;
+        // Chỉ cho phép nhập số
+        value = value.replace(/[^\d]/g, '');
+        // Giới hạn 11 số
+        if (value.length > 11) {
+            value = value.slice(0, 11);
+        }
+
+        setFormData({
+            ...formData,
+            phone: value
+        });
+
+        // Validate khi có giá trị
+        if (value.trim()) {
+            const error = validatePhoneNumber(value);
+            setPhoneError(error);
+        } else {
+            setPhoneError('');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
             toast.error('Mật khẩu không khớp');
+            return;
+        }
+
+        // Validate phone number
+        const phoneValidationError = validatePhoneNumber(formData.phone);
+        if (phoneValidationError) {
+            setPhoneError(phoneValidationError);
+            toast.error(phoneValidationError);
             return;
         }
 
@@ -184,7 +233,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                             </label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className={`h-5 w-5 transition-colors ${phoneError ? 'text-red-500' : 'text-gray-400 group-focus-within:text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
                                 </div>
@@ -194,10 +243,30 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                                     type="tel"
                                     required
                                     value={formData.phone}
-                                    onChange={handleChange}
-                                    className="block w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all text-gray-800 placeholder:text-gray-400 hover:border-gray-300"
+                                    onChange={handlePhoneChange}
+                                    maxLength={11}
+                                    className={`block w-full pl-12 pr-4 py-3.5 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 transition-all text-gray-800 placeholder:text-gray-400 ${phoneError
+                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-100 bg-red-50'
+                                            : 'border-gray-200 focus:border-green-500 focus:ring-green-100 hover:border-gray-300'
+                                        }`}
                                     placeholder="0123456789"
                                 />
+                                {phoneError && (
+                                    <div className="flex items-center gap-1.5 mt-2 text-sm text-red-600">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>{phoneError}</span>
+                                    </div>
+                                )}
+                                {!phoneError && formData.phone && formData.phone.length >= 10 && (
+                                    <div className="flex items-center gap-1.5 mt-2 text-sm text-emerald-600">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>Số điện thoại hợp lệ</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

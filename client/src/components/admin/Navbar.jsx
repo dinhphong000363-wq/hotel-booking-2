@@ -1,8 +1,8 @@
 import React from 'react'
 import { assets } from '../../assets/assets'
 import { Link } from 'react-router-dom'
-import { useAppContext } from '../../conext/AppContext'
-import UserMenu from '../UserMenu'
+import { useAppContext } from '../../context/AppContext'
+import UserMenu from '../common/UserMenu'
 
 const Navbar = () => {
     const { user } = useAppContext();

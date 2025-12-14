@@ -91,32 +91,40 @@ const StripePayment = () => {
     };
 
     const handleExpiryChange = (e) => {
-        const formatted = formatExpiry(e.target.value);
-        const digitsOnly = formatted.replace(/\s|\//g, '');
+        const input = e.target.value;
+        // Chỉ lấy số và loại bỏ ký tự khác
+        const digitsOnly = input.replace(/[^0-9]/g, '');
 
-        if (digitsOnly.length <= 4) {
-            setExpiry(formatted);
+        // Giới hạn tối đa 4 số
+        const limitedDigits = digitsOnly.slice(0, 4);
 
-            // Validate
-            if (!digitsOnly) {
-                setErrors(prev => ({ ...prev, expiry: 'Vui lòng nhập ngày hết hạn' }));
-            } else if (digitsOnly.length === 4) {
-                const month = parseInt(digitsOnly.substring(0, 2));
-                const year = parseInt('20' + digitsOnly.substring(2, 4));
-                const now = new Date();
-                const currentMonth = now.getMonth() + 1;
-                const currentYear = now.getFullYear();
+        // Format với dấu /
+        let formatted = limitedDigits;
+        if (limitedDigits.length >= 2) {
+            formatted = limitedDigits.slice(0, 2) + ' / ' + limitedDigits.slice(2);
+        }
 
-                if (month < 1 || month > 12) {
-                    setErrors(prev => ({ ...prev, expiry: 'Tháng phải từ 01-12' }));
-                } else if (year < currentYear || (year === currentYear && month < currentMonth)) {
-                    setErrors(prev => ({ ...prev, expiry: 'Thẻ đã hết hạn' }));
-                } else {
-                    setErrors(prev => ({ ...prev, expiry: '' }));
-                }
+        setExpiry(formatted);
+
+        // Validate
+        if (!limitedDigits) {
+            setErrors(prev => ({ ...prev, expiry: 'Vui lòng nhập ngày hết hạn' }));
+        } else if (limitedDigits.length === 4) {
+            const month = parseInt(limitedDigits.substring(0, 2));
+            const year = parseInt('20' + limitedDigits.substring(2, 4));
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+
+            if (month < 1 || month > 12) {
+                setErrors(prev => ({ ...prev, expiry: 'Tháng phải từ 01-12' }));
+            } else if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                setErrors(prev => ({ ...prev, expiry: 'Thẻ đã hết hạn' }));
             } else {
-                setErrors(prev => ({ ...prev, expiry: 'Định dạng MM/YY' }));
+                setErrors(prev => ({ ...prev, expiry: '' }));
             }
+        } else if (limitedDigits.length > 0) {
+            setErrors(prev => ({ ...prev, expiry: 'Định dạng MM/YY' }));
         }
     };
 

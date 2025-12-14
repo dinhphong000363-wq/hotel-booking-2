@@ -18,7 +18,7 @@ const getHotelContext = async () => {
 
         console.log(`📊 Chatbot Data: ${rooms.length} rooms, ${hotels.length} hotels, ${discountedRooms.length} discounted`)
 
-        let context = '=== DỮ LIỆU KHÁCH SẠN (THỰC TẾ) ===\n\n'
+        let context = '=== DỮ LIỆU KHÁCH SẠN (THỰC TẾ - CẬP NHẬT REAL-TIME) ===\n\n'
 
         // Hotels info
         if (hotels.length > 0) {
@@ -38,19 +38,24 @@ const getHotelContext = async () => {
 
         // Available rooms
         if (rooms.length > 0) {
-            context += '🏨 CÁC PHÒNG:\n'
+            context += '🏨 CÁC PHÒNG (GIÁ CẬP NHẬT MỚI NHẤT):\n'
             rooms.forEach(room => {
-                context += `- ${room.name} (${room.hotel?.name || 'Khách sạn'})\n`
-                context += `  💰 Giá: $${room.price?.toLocaleString('vi-VN') || 'Chưa cập nhật'}/đêm\n`
-                context += `  👥 Sức chứa: ${room.capacity || 'Chưa rõ'} người\n`
-                context += `  🛏️ Giường: ${room.bedType || 'Không xác định'}\n`
-                context += `  📍 Trạng thái: ${room.isAvailable ? 'Còn phòng' : 'Hết phòng'}\n`
+                const roomPrice = room.pricePerNight || room.price || 0;
+                const roomType = room.roomType || room.name || 'Phòng';
+
+                context += `- ${roomType} (${room.hotel?.name || 'Khách sạn'})\n`
+                context += `  💰 Giá gốc: $${roomPrice.toLocaleString('en-US')}/đêm\n`
+
+                if (room.discount > 0) {
+                    const discountedPrice = roomPrice * (1 - room.discount / 100)
+                    context += `  🎉 GIẢM GIÁ ${room.discount}%: $${Math.round(discountedPrice).toLocaleString('en-US')}/đêm\n`
+                    context += `  💵 Tiết kiệm: $${Math.round(roomPrice - discountedPrice).toLocaleString('en-US')}\n`
+                }
+
+                context += `  📍 Trạng thái: ${room.isAvailable ? '✅ Còn phòng' : '❌ Hết phòng'}\n`
+
                 if (room.amenities?.length > 0) {
                     context += `  ✨ Tiện ích: ${room.amenities.join(', ')}\n`
-                }
-                if (room.discount > 0) {
-                    const discountedPrice = room.price * (1 - room.discount / 100)
-                    context += `  🎉 GIẢM GIÁ ${room.discount}%: $${discountedPrice.toLocaleString('vi-VN')}\n`
                 }
             })
             context += '\n'
@@ -104,9 +109,10 @@ ${hotelContext}
 QUY TẮC QUAN TRỌNG:
 1. BẮT BUỘC sử dụng dữ liệu thực tế ở trên để trả lời
 2. KHÔNG BAO GIỜ nói "không có dữ liệu" nếu có phòng/khách sạn ở trên
-3. Nếu có phòng, HÃY GIỚI THIỆU CỤ THỂ với tên, giá, tiện ích
-4. Trả lời ngắn gọn, dễ hiểu, có emoji
-5. Kết thúc bằng câu hỏi để tiếp tục hội thoại
+3. Nếu có phòng, HÃY GIỚI THIỆU CỤ THỂ với tên, giá CHÍNH XÁC, tiện ích
+4. Khi nói về giá, PHẢI dùng số liệu CHÍNH XÁC từ dữ liệu trên
+5. Trả lời ngắn gọn, dễ hiểu, có emoji
+6. Kết thúc bằng câu hỏi để tiếp tục hội thoại
 
 ${conversationText ? `LỊCH SỬ:\n${conversationText}\n` : ''}KHÁCH: ${message}
 

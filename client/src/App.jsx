@@ -1,5 +1,5 @@
 import React from 'react'
-import Navbar from './components/Navbar'
+import Navbar from './components/layout/Navbar'
 import { useLocation, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import AllRooms from './pages/AllRooms'
@@ -18,16 +18,18 @@ import HotelApproval from './pages/admin/HotelApproval'
 import HotelManagement from './pages/admin/HotelManagement'
 import UserManagement from './pages/admin/UserManagement'
 import { Toaster } from 'react-hot-toast'
-import { useAppContext } from './conext/AppContext'
+import { useAppContext } from './context/AppContext'
 import Favorites from './pages/Favorites'
 import DiscountedRooms from './pages/DiscountedRooms'
-import Chatbot from './components/Chatbot'
+import Chatbot from './components/layout/Chatbot'
 import HotelStatus from './pages/HotelStatus'
 import Profile from './pages/Profile'
 import AuthCallback from './pages/AuthCallback'
-import ProtectedRoute from './components/ProtectedRoute'
+import ProtectedRoute from './components/common/ProtectedRoute'
 import StripePayment from './pages/payment/StripePayment'
 import MoMoPayment from './pages/payment/MoMoPayment'
+import Experience from './pages/Experience'
+import About from './pages/About'
 
 const App = () => {
   const location = useLocation()
@@ -49,6 +51,8 @@ const App = () => {
           <Route path='/rooms' element={<AllRooms />} />
           <Route path='/rooms/:id' element={<RoomsTails />} />
           <Route path='/discounted-rooms' element={<DiscountedRooms />} />
+          <Route path='/experience' element={<Experience />} />
+          <Route path='/about' element={<About />} />
           <Route path='/register-hotel' element={
             <ProtectedRoute>
               <RegisterHotel />

@@ -108,6 +108,7 @@ export const AppProvider = ({ children }) => {
         fetchRooms,
         hotelStatusUpdated,
         setHotelStatusUpdated,
+        toast,
     };
 
     return (

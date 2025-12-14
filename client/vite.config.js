@@ -8,5 +8,18 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-
+  server: {
+    hmr: {
+      overlay: false // Tắt error overlay nếu muốn
+    }
+  },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // Bỏ qua warnings từ browser extensions
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return
+        warn(warning)
+      }
+    }
+  }
 })

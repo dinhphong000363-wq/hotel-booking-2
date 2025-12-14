@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../utils/authUtils';
-import { useAppContext } from '../conext/AppContext';
+import { logout } from '../../utils/authUtils';
+import { useAppContext } from '../../context/AppContext';
 import toast from 'react-hot-toast';
 
 const UserMenu = ({ user, children }) => {

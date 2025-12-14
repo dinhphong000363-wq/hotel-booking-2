@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import SearchModal from "./SearchModal";
-import AlternativeDatesModal from "./AlternativeDatesModal";
+import SearchModal from "../modals/SearchModal";
+import AlternativeDatesModal from "../modals/AlternativeDatesModal";
 import RoomAvailabilityBadge from "./RoomAvailabilityBadge";
 
 /**

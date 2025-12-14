@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { useAppContext } from '../../conext/AppContext'
+import { useAppContext } from '../../context/AppContext'
 import toast from 'react-hot-toast'
-import ConfirmModal from '../../components/ConfirmModal'
+import ConfirmModal from '../../components/modals/ConfirmModal'
 
 const UserManagement = () => {
     const { axios, getToken, user } = useAppContext();

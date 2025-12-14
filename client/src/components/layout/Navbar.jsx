@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { assets } from "../assets/assets";
-import { useAppContext } from "../conext/AppContext";
-import UserMenu from "./UserMenu";
-import LoginModal from "./LoginModal";
-import RegisterModal from "./RegisterModal";
-import SearchModal from "./SearchModal";
+import { assets } from "../../assets/assets";
+import { useAppContext } from "../../context/AppContext";
+import UserMenu from "../common/UserMenu";
+import LoginModal from "../modals/LoginModal";
+import RegisterModal from "../modals/RegisterModal";
+import SearchModal from "../modals/SearchModal";
 
 const BookIcon = () => {
     return (
@@ -55,8 +55,8 @@ const Navbar = () => {
     const navLinks = [
         { name: "Trang chủ", path: "/" },
         { name: "Khách sạn", path: "/rooms" },
-        { name: "Trải nghiệm", path: "/" },
-        { name: "Giới thiệu", path: "/" },
+        { name: "Trải nghiệm", path: "/experience" },
+        { name: "Giới thiệu", path: "/about" },
     ];
 
     const [isScrolled, setIsScrolled] = useState(false);

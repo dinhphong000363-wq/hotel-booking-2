@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
-import HotelCard from './HotelCard'
-import Title from './Title'
-import { useAppContext } from '../conext/AppContext'
+import HotelCard from '../hotel/HotelCard'
+import Title from '../common/Title'
+import { useAppContext } from '../../context/AppContext'
 
 const FeaturedDestination = () => {
   const { rooms, navigate } = useAppContext()
@@ -29,11 +29,7 @@ const FeaturedDestination = () => {
         {featuredRooms.map((room, index) => (
           <div
             key={room._id}
-            className="
-              bg-white rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.05)] 
-              border border-gray-100 overflow-hidden 
-              transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]
-            "
+            className="bg-white rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
           >
             <HotelCard room={room} index={index} />
           </div>

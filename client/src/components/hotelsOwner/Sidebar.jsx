@@ -3,8 +3,8 @@ import { Link, NavLink } from 'react-router-dom'
 
 const Sidebar = () => {
     const sidebarLinks = [
-        { 
-            name: 'Bảng điều khiển', 
+        {
+            name: 'Bảng điều khiển',
             path: '/owner',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13,8 +13,8 @@ const Sidebar = () => {
             ),
             gradient: 'from-blue-500 to-cyan-500'
         },
-        { 
-            name: 'Thông tin khách sạn', 
+        {
+            name: 'Thông tin khách sạn',
             path: '/owner/hotel-info',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,8 +23,8 @@ const Sidebar = () => {
             ),
             gradient: 'from-indigo-500 to-purple-500'
         },
-        { 
-            name: 'Thêm phòng', 
+        {
+            name: 'Thêm phòng',
             path: '/owner/add-room',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,8 +33,8 @@ const Sidebar = () => {
             ),
             gradient: 'from-green-500 to-emerald-500'
         },
-        { 
-            name: 'Danh sách phòng', 
+        {
+            name: 'Danh sách phòng',
             path: '/owner/list-room',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,8 +43,8 @@ const Sidebar = () => {
             ),
             gradient: 'from-purple-500 to-pink-500'
         },
-        { 
-            name: 'Đơn đặt phòng', 
+        {
+            name: 'Đơn đặt phòng',
             path: '/owner/bookings',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,12 +56,12 @@ const Sidebar = () => {
     ]
 
     return (
-        <div className='md:w-72 w-20 border-r border-gray-200/80 h-screen fixed top-0 left-0 bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/30 shadow-2xl flex flex-col transition-all duration-300 relative overflow-y-auto overflow-x-hidden custom-scrollbar z-40'>
+        <div className='md:w-72 w-20 border-r border-gray-200/80 h-screen fixed top-0 left-0 bg-gradient-to-b from-white via-blue-50/30 to-indigo-50/30 shadow-2xl flex flex-col transition-all duration-300 relative overflow-hidden z-40'>
             {/* Decorative background elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-transparent rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-purple-400/10 to-transparent rounded-full blur-3xl"></div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-indigo-400/5 to-pink-400/5 rounded-full blur-3xl"></div>
-            
+
             {/* Hotel Owner Header */}
             <div className="relative z-10 px-4 md:px-6 py-6 mb-2">
                 <div className="flex items-center justify-center md:justify-start gap-3">
@@ -88,17 +88,16 @@ const Sidebar = () => {
             </div>
 
             {/* Navigation Links */}
-            <nav className="relative z-10 flex-1 px-3 md:px-4 space-y-1.5">
+            <nav className="relative z-10 flex-1 px-3 md:px-4 space-y-1.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {sidebarLinks.map((item, index) => (
                     <NavLink
                         to={item.path}
                         key={index}
                         end
                         className={({ isActive }) =>
-                            `group relative flex items-center py-4 px-3 md:px-5 gap-4 rounded-2xl transition-all duration-300 overflow-hidden ${
-                                isActive
-                                    ? "bg-gradient-to-r " + item.gradient + " text-white shadow-xl transform scale-[1.02]"
-                                    : "hover:bg-white/80 hover:shadow-lg text-gray-600 hover:text-gray-900 backdrop-blur-sm"
+                            `group relative flex items-center py-4 px-3 md:px-5 gap-4 rounded-2xl transition-all duration-300 overflow-hidden ${isActive
+                                ? "bg-gradient-to-r " + item.gradient + " text-white shadow-xl transform scale-[1.02]"
+                                : "hover:bg-white/80 hover:shadow-lg text-gray-600 hover:text-gray-900 backdrop-blur-sm"
                             }`
                         }
                     >
@@ -111,24 +110,22 @@ const Sidebar = () => {
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                                     </>
                                 )}
-                                
+
                                 {/* Icon container with special effects */}
-                                <div className={`relative z-10 flex-shrink-0 transform transition-all duration-300 ${
-                                    isActive 
-                                        ? 'scale-110' 
-                                        : 'group-hover:scale-110 group-hover:rotate-6'
-                                }`}>
+                                <div className={`relative z-10 flex-shrink-0 transform transition-all duration-300 ${isActive
+                                    ? 'scale-110'
+                                    : 'group-hover:scale-110 group-hover:rotate-6'
+                                    }`}>
                                     <div className={`${isActive ? '' : 'group-hover:drop-shadow-lg'}`}>
                                         {item.icon}
                                     </div>
                                 </div>
-                                
+
                                 {/* Text with gradient on hover */}
-                                <span className={`hidden md:block relative z-10 font-bold text-sm whitespace-nowrap transition-all duration-300 ${
-                                    isActive 
-                                        ? 'text-white tracking-wide' 
-                                        : 'text-gray-700 group-hover:text-gray-900'
-                                }`}>
+                                <span className={`hidden md:block relative z-10 font-bold text-sm whitespace-nowrap transition-all duration-300 ${isActive
+                                    ? 'text-white tracking-wide'
+                                    : 'text-gray-700 group-hover:text-gray-900'
+                                    }`}>
                                     {item.name}
                                 </span>
 
@@ -182,7 +179,7 @@ const Sidebar = () => {
                         <span className="font-semibold">Phiên bản 3.0.2</span>
                     </div>
                 </div>
-                
+
                 {/* Mobile bottom indicator */}
                 <div className="md:hidden flex justify-center">
                     <div className="flex gap-1.5">

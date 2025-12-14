@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { assets, cities, heroSliderImages } from "../assets/assets";
-import { useAppContext } from "../conext/AppContext";
+import { assets, cities, heroSliderImages } from "../../assets/assets";
+import { useAppContext } from '../../context/AppContext';
 
 const Hero = () => {
   const { navigate, getToken, axios, setSearchedCities } = useAppContext();

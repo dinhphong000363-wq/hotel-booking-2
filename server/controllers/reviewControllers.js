@@ -23,8 +23,8 @@ export const getRoomReviews = async (req, res) => {
       averageRating: getAverageRating(reviews),
     });
   } catch (error) {
-    console.error("❌ Error fetching reviews:", error);
-    res.json({ success: false, message: "Failed to fetch reviews" });
+    console.error("❌ Lỗi khi lấy đánh giá:", error);
+    res.json({ success: false, message: "Không thể lấy đánh giá" });
   }
 };
 
@@ -36,14 +36,14 @@ export const createOrUpdateReview = async (req, res) => {
     if (!roomId || !rating) {
       return res.json({
         success: false,
-        message: "Room ID and rating are required",
+        message: "ID phòng và đánh giá là bắt buộc",
       });
     }
 
     if (rating < 1 || rating > 5) {
       return res.json({
         success: false,
-        message: "Rating must be between 1 and 5",
+        message: "Đánh giá phải nằm trong khoảng từ 1 đến 5",
       });
     }
 
@@ -86,13 +86,13 @@ export const createOrUpdateReview = async (req, res) => {
 
     res.json({
       success: true,
-      message: existingReview ? "Review updated successfully" : "Review added successfully",
+      message: existingReview ? "Đánh giá đã cập nhật thành công" : "Đánh giá đã được thêm thành công",
       reviews,
       averageRating: getAverageRating(reviews),
     });
   } catch (error) {
-    console.error("❌ Error creating/updating review:", error);
-    res.json({ success: false, message: "Failed to submit review" });
+    console.error("❌ Lỗi khi tạo hoặc cập nhật đánh giá:", error);
+    res.json({ success: false, message: "Không thể gửi đánh giá" });
   }
 };
 

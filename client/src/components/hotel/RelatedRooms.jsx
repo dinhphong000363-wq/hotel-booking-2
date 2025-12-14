@@ -1,6 +1,6 @@
 import React from 'react'
-import { assets } from '../assets/assets'
-import { translateRoomType } from '../utils/translations'
+import { assets } from '../../assets/assets'
+import { translateRoomType } from '../../utils/translations'
 
 const StaticRating = () => (
     <div className="flex">

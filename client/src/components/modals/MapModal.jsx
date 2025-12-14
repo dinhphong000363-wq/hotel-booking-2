@@ -1,5 +1,5 @@
 import React from 'react'
-import MapWithSearch from './MapWithSearch'
+import MapWithSearch from '../hotel/MapWithSearch'
 
 const MapModal = ({ isOpen, onClose, address }) => {
     if (!isOpen) return null

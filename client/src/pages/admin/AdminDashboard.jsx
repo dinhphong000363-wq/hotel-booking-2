@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useAppContext } from '../../conext/AppContext'
+import { useAppContext } from '../../context/AppContext'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { assets } from '../../assets/assets'

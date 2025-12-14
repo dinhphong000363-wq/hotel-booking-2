@@ -31,10 +31,23 @@ passport.use(new GoogleStrategy({
                 return done(null, false, { message: 'Email already registered with different provider' });
             }
 
+            // Always update avatar and provider info for Google users
+            let needsUpdate = false;
+
             if (!user.providerId) {
                 user.provider = 'google';
                 user.providerId = profile.id;
-                user.avatar = profile.photos[0]?.value || '';
+                needsUpdate = true;
+            }
+
+            // Update avatar if it's different or missing
+            const newAvatar = profile.photos[0]?.value || '';
+            if (newAvatar && user.avatar !== newAvatar) {
+                user.avatar = newAvatar;
+                needsUpdate = true;
+            }
+
+            if (needsUpdate) {
                 await user.save();
             }
 

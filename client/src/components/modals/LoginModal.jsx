@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { useAppContext } from '../conext/AppContext';
+import { useAppContext } from '../../context/AppContext';
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     const [searchParams] = useSearchParams();

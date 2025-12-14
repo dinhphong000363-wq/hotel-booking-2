@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { useAppContext } from '../../conext/AppContext'
+import { useAppContext } from '../../context/AppContext'
 import BookingDetailModal from '../../components/hotelsOwner/BookingDetailModal'
 import CancelBookingByOwnerModal from '../../components/hotelsOwner/CancelBookingByOwnerModal'
 import { translateBookingStatus, translatePaymentStatus, translateRoomType } from '../../utils/translations'

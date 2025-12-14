@@ -1,13 +1,13 @@
-﻿import React, { useCallback, useEffect, useState, useRef } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { assets, facilityIcons, roomCommonData } from '../assets/assets'
-import { useAppContext } from '../conext/AppContext'
+import { useAppContext } from '../context/AppContext'
 import { translateAmenity, translateRoomType } from '../utils/translations'
 import toast from 'react-hot-toast'
-import MapWithSearch from '../components/MapWithSearch'
-import MapModal from '../components/MapModal'
-import HotelContact from '../components/HotelContact'
-import RelatedRooms from '../components/RelatedRooms'
+import MapWithSearch from '../components/hotel/MapWithSearch'
+import MapModal from '../components/modals/MapModal'
+import HotelContact from '../components/hotel/HotelContact'
+import RelatedRooms from '../components/hotel/RelatedRooms'
 
 const StaticRating = () => (
     <div className="flex">
@@ -26,6 +26,54 @@ const StaticRating = () => (
             ))}
     </div>
 )
+
+const UserAvatar = ({ user }) => {
+    const hasAvatar = user?.avatar?.trim();
+
+    if (hasAvatar) {
+        return (
+            <img
+                src={user.avatar}
+                alt={user.name || 'User'}
+                className="w-12 h-12 rounded-full object-cover border border-gray-200"
+            />
+        );
+    }
+
+    // Lấy chữ cái đầu từ tên hoặc email
+    const getInitial = () => {
+        if (user?.name) {
+            return user.name.charAt(0).toUpperCase();
+        }
+        if (user?.email) {
+            return user.email.charAt(0).toUpperCase();
+        }
+        return '?';
+    };
+
+    // Tạo màu nền dựa trên tên/email
+    const getBackgroundColor = () => {
+        const colors = [
+            'bg-blue-500',
+            'bg-green-500',
+            'bg-purple-500',
+            'bg-pink-500',
+            'bg-indigo-500',
+            'bg-red-500',
+            'bg-yellow-500',
+            'bg-teal-500'
+        ];
+        const str = user?.name || user?.email || '';
+        const index = str.charCodeAt(0) % colors.length;
+        return colors[index];
+    };
+
+    return (
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg border border-gray-200 ${getBackgroundColor()}`}>
+            {getInitial()}
+        </div>
+    );
+}
 const RoomsTails = () => {
     const { id } = useParams();
     const { rooms, getToken, axios, navigate, user, currency } = useAppContext();
@@ -60,7 +108,7 @@ const RoomsTails = () => {
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.173c.969 0 1.371 1.24.588 1.81l-3.378 2.454a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.379-2.454a1 1 0 00-1.175 0l-3.379 2.454c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.173a1 1 0 00.95-.69l1.286-3.967z" />
         </svg>
     );
-    // ✅ 1. Hàm kiểm tra phòng
+    // ? 1. Hàm kiểm tra phòng
     const CheckAvailability = async () => {
         try {
             if (!checkInDate || !checkOutDate) {
@@ -94,7 +142,7 @@ const RoomsTails = () => {
         }
     };
 
-    // ✅ 2. Hàm đặt phòng thực sự
+    // ? 2. Hàm đặt phòng thực sự
     const handleBooking = async () => {
         try {
             const { data } = await axios.post(
@@ -247,7 +295,7 @@ const RoomsTails = () => {
         }
     };
 
-    // ✅ 3. Xử lý khi nhấn nút (check hoặc book)
+    // ? 3. Xử lý khi nhấn nút (check hoặc book)
     const onSubmitHandle = async (e) => {
         e.preventDefault();
 
@@ -307,7 +355,7 @@ const RoomsTails = () => {
                     </div>
                     <p className="text-sm text-gray-600">
                         {reviews.length > 0
-                            ? `${averageDisplay}/5 · ${reviews.length} đánh giá`
+                            ? `${averageDisplay}/5 • ${reviews.length} đánh giá`
                             : 'Chưa có đánh giá'}
                     </p>
                 </div>
@@ -522,7 +570,7 @@ const RoomsTails = () => {
                             </div>
                             <span className="text-sm text-gray-500">
                                 {reviews.length > 0
-                                    ? `${averageDisplay}/5 · ${reviews.length} đánh giá`
+                                    ? `${averageDisplay}/5 • ${reviews.length} đánh giá`
                                     : 'Chưa có đánh giá'}
                             </span>
                         </div>
@@ -537,11 +585,7 @@ const RoomsTails = () => {
                                 >
                                     <div className="flex items-center justify-between gap-3">
                                         <div className="flex items-center gap-3">
-                                            <img
-                                                src={review.user?.avatar || assets.userIcon}
-                                                alt={review.user?.name || 'Ẩn danh'}
-                                                className="w-12 h-12 rounded-full object-cover border border-gray-200"
-                                            />
+                                            <UserAvatar user={review.user} />
                                             <div>
                                                 <p className="font-medium text-gray-800">
                                                     {review.user?.name || 'Ẩn danh'}
@@ -657,7 +701,7 @@ const RoomsTails = () => {
                 <div className='max-w-3x1 border-y border-gray-300 my-15 py-10 text-gray-500'>
                     <p>Khách sẽ được phân bổ ở tầng trệt tùy theo tình trạng phòng trống.
                         Bạn sẽ có một căn hộ hai phòng ngủ thoải mái mang đậm phong cách thành phố.
-                        Giá trên áp dụng cho hai khách, vui lòng ghi rõ số lượng khách tại ô dành cho khách để biết giá chính xác cho nhóm.
+                        Giá trên áp dụng cho hai khách, vui lòng ghi rõ số lượng khách tối đa dành cho khách để biết giá chính xác cho nhóm.
                         Khách sẽ được phân bổ ở tầng trệt tùy theo tình trạng phòng trống.
                         Bạn sẽ có một căn hộ hai phòng ngủ thoải mái mang đậm phong cách thành phố.</p>
                 </div>

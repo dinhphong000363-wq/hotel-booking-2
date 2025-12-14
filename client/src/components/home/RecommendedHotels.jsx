@@ -1,7 +1,7 @@
 import React from 'react'
-import HotelCard from './HotelCard'
-import Title from './Title'
-import { useAppContext } from '../conext/AppContext'
+import HotelCard from '../hotel/HotelCard'
+import Title from '../common/Title'
+import { useAppContext } from '../../context/AppContext'
 
 const RecommendedHotels = () => {
     const { rooms, navigate } = useAppContext()

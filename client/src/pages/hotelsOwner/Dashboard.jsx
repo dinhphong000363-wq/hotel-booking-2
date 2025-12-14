@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import Title from '../../components/Title'
+import Title from '../../components/common/Title'
 import { assets } from '../../assets/assets'
-import { useAppContext } from '../../conext/AppContext'
+import { useAppContext } from '../../context/AppContext'
 import toast from 'react-hot-toast'
 import {
     BarChart,

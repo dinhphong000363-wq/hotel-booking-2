@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { assets } from '../assets/assets'
-import { useAppContext } from '../conext/AppContext'
+import { useAppContext } from '../context/AppContext'
 import toast from 'react-hot-toast';
 import axios from 'axios';
-import MapWithSearch from '../components/MapWithSearch';
+import MapWithSearch from '../components/hotel/MapWithSearch';
 
 const RegisterHotel = () => {
     const { axios: authAxios, getToken, navigate, setHotelStatusUpdated } = useAppContext();
