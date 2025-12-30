@@ -347,7 +347,7 @@ const AdminDashboard = () => {
                                         <tr key={hotel._id} className="hover:bg-gray-50">
                                             <td className="px-4 py-3 text-sm font-medium text-gray-900">{hotel.name}</td>
                                             <td className="px-4 py-3 text-sm text-gray-600">
-                                                {hotel.owner?.username || 'N/A'}
+                                                {hotel.owner?.name || 'N/A'}
                                             </td>
                                             <td className="px-4 py-3 text-sm text-gray-500">
                                                 {new Date(hotel.createdAt).toLocaleDateString('vi-VN')}

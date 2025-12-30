@@ -13,6 +13,19 @@ export const AppProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
+    // Logout function
+    const logout = () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        setUser(null);
+        setUserRole(null);
+        setIsAdmin(false);
+        setIsOwner(false);
+        setSearchedCities([]);
+        navigate('/');
+        toast.success('Đã đăng xuất');
+    };
+
     const [isOwner, setIsOwner] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [userRole, setUserRole] = useState(null);
@@ -60,6 +73,19 @@ export const AppProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        // Setup axios interceptor to handle token expiration
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === 403 &&
+                    error.response?.data?.message === 'Token expired') {
+                    toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    logout();
+                }
+                return Promise.reject(error);
+            }
+        );
+
         const authUser = getAuthUser();
         if (authUser) {
             // Validate user ID format (MongoDB ObjectId is 24 hex chars)
@@ -79,6 +105,11 @@ export const AppProvider = ({ children }) => {
                 localStorage.removeItem('token');
             }
         }
+
+        // Cleanup interceptor on unmount
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
     }, []);
 
     useEffect(() => {
@@ -90,6 +121,7 @@ export const AppProvider = ({ children }) => {
         user,
         setUser,
         getToken,
+        logout,
         isOwner,
         setIsOwner,
         isAdmin,

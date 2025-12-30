@@ -338,7 +338,7 @@ const Dashboard = () => {
                                             ) : (
                                                 stats.recentBookings.map((booking) => (
                                                     <tr key={booking._id} className="border-t hover:bg-gray-50">
-                                                        <td className="px-4 py-3">{booking.user?.username || 'N/A'}</td>
+                                                        <td className="px-4 py-3">{booking.user?.name || 'N/A'}</td>
                                                         <td className="px-4 py-3">{translateRoomType(booking.room?.roomType) || 'N/A'}</td>
                                                         <td className="px-4 py-3">{new Date(booking.checkInDate).toLocaleDateString('vi-VN')}</td>
                                                         <td className="px-4 py-3 text-right font-semibold">

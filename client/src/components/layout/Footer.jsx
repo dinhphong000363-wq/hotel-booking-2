@@ -105,7 +105,7 @@ const Footer = () => {
                                 className="w-10 h-10 object-contain"
                             />
                             <h2 className={`text-3xl font-bold bg-gradient-to-r ${currentTheme.accent} bg-clip-text text-transparent transition-all duration-500`}>
-                                Ở Đây
+                            
                             </h2>
                         </div>
                         <p className="text-gray-400 text-sm">

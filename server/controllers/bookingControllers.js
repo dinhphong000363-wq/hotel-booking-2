@@ -17,6 +17,7 @@ const checkAvailability = async ({ checkInDate, checkOutDate, room }) => {
         return isAvailable;
     } catch (error) {
         console.error(error.message);
+        return false;
     }
 };
 // API để kiểm tra tình trạng phòng trống
@@ -78,6 +79,8 @@ export const createBooking = async (req, res) => {
             checkOutDate,
             totalPrice,
         });
+
+        // Send email (non-blocking - don't fail booking if email fails)
         const mailOption = {
             from: process.env.SENDER_EMAIL,
             to: req.user.email,
@@ -107,24 +110,28 @@ export const createBooking = async (req, res) => {
             <p>Chúng tôi rất mong được chào đón bạn!</p>
             <p>Nếu bạn cần thực hiện bất kỳ thay đổi nào, vui lòng liên hệ với chúng tôi.</p>
             `
-        }
-        await transporter.sendMail(
-            mailOption
-        )
+        };
 
-        // Create notification for hotel owner
+        // Send email without blocking the response
+        transporter.sendMail(mailOption).catch(err => {
+            console.error('Failed to send booking email:', err);
+        });
+
+        // Create notification for hotel owner (non-blocking)
         const hotel = await Hotel.findById(roomData.hotel._id).populate("owner");
         if (hotel && hotel.owner) {
-            await Notification.create({
+            Notification.create({
                 user: hotel.owner._id,
                 type: "booking_new",
                 title: "Đặt phòng mới",
                 message: `Có đặt phòng mới từ ${req.user.username} cho phòng ${roomData.roomType}`,
                 relatedId: booking._id.toString(),
+            }).catch(err => {
+                console.error('Failed to create notification:', err);
             });
         }
 
-        res.json({ success: true, message: "Đã tạo đặt phòng thành công" })
+        res.json({ success: true, message: "Đã tạo đặt phòng thành công" });
 
 
     } catch (error) {
@@ -328,7 +335,38 @@ export const deleteBooking = async (req, res) => {
     }
 };
 
-// API để hủy đặt phòng (Customer)
+// API để tự động hoàn thành các booking đã qua checkout
+// GET /api/bookings/auto-complete (có thể gọi định kỳ hoặc khi cần)
+export const autoCompleteExpiredBookings = async (req, res) => {
+    try {
+        const now = new Date();
+
+        // Tìm tất cả booking đã qua checkout nhưng chưa hoàn thành
+        const expiredBookings = await Booking.find({
+            checkOutDate: { $lt: now },
+            status: { $in: ['pending', 'confirmed'] }
+        });
+
+        // Cập nhật tất cả thành completed
+        const updatePromises = expiredBookings.map(booking =>
+            Booking.findByIdAndUpdate(booking._id, {
+                status: 'completed',
+                completedAt: now
+            })
+        );
+
+        await Promise.all(updatePromises);
+
+        res.json({
+            success: true,
+            message: `Đã tự động hoàn thành ${expiredBookings.length} booking`,
+            count: expiredBookings.length
+        });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: "Không thể tự động hoàn thành booking" });
+    }
+};
 // POST /api/bookings/:id/cancel
 export const cancelBooking = async (req, res) => {
     try {

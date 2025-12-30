@@ -335,7 +335,7 @@ const RoomsTails = () => {
                         </span>
                     </h1>
 
-                    {room.discount && room.discount > 0 && (
+                    {room.discount > 0 && (
                         <p className="text-xs font-inter py-1.5 px-3 text-white bg-rose-500 rounded-full font-bold shadow-lg">
                             Giảm {room.discount}%
                         </p>
@@ -484,7 +484,7 @@ const RoomsTails = () => {
 
                 {/* Room Price */}
                 <div className="mt-6">
-                    {room.discount && room.discount > 0 ? (
+                    {room.discount > 0 ? (
                         <div>
                             <p className="text-lg text-gray-500 line-through">
                                 {currency}{Number(room.pricePerNight || 0).toLocaleString('vi-VN')} / đêm

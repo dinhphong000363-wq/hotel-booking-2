@@ -1,6 +1,7 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import toast from 'react-hot-toast';
-import { translateRoomType, translateBookingStatus } from './translations';
+import { translateRoomType } from './translations';
 
 /**
  * Export admin dashboard statistics to PDF
@@ -8,296 +9,158 @@ import { translateRoomType, translateBookingStatus } from './translations';
 export const exportAdminDashboardPDF = async (stats, currency, setExporting) => {
     try {
         setExporting(true);
-        toast.loading('Đang tạo báo cáo PDF...', { id: 'export-pdf' });
+        toast.loading('Dang tao bao cao PDF...', { id: 'export-pdf' });
 
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        let yPosition = 25;
-        const margin = 20;
-        const lineHeight = 8;
-        const sectionSpacing = 12;
+        let yPosition = 20;
 
-        // Helper function to add new page if needed
-        const checkPageBreak = (requiredSpace = 20) => {
-            if (yPosition > pageHeight - requiredSpace) {
-                pdf.addPage();
-                yPosition = 25;
-                return true;
-            }
-            return false;
-        };
-
-        // Header với background
-        pdf.setFillColor(59, 130, 246); // Blue color
-        pdf.rect(0, 0, pageWidth, 35, 'F');
-        
+        // Header
+        pdf.setFillColor(59, 130, 246);
+        pdf.rect(0, 0, pageWidth, 40, 'F');
         pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(24);
+        pdf.setFontSize(22);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('BÁO CÁO THỐNG KÊ HỆ THỐNG', pageWidth / 2, 18, { align: 'center' });
-        
-        pdf.setFontSize(12);
+        pdf.text('BAO CAO THONG KE HE THONG', pageWidth / 2, 20, { align: 'center' });
+        pdf.setFontSize(11);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(`Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}`, pageWidth / 2, 28, { align: 'center' });
-        
-        pdf.setTextColor(0, 0, 0);
-        yPosition = 45;
+        pdf.text(`Ngay xuat: ${new Date().toLocaleDateString('vi-VN')}`, pageWidth / 2, 30, { align: 'center' });
 
-        // Tổng quan thống kê
-        pdf.setFillColor(249, 250, 251); // Light gray background
-        pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-        
-        pdf.setFontSize(18);
+        yPosition = 50;
+
+        // Overview section
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(30, 41, 59);
-        pdf.text('1. TỔNG QUAN THỐNG KÊ', margin, yPosition);
-        yPosition += sectionSpacing;
+        pdf.text('TONG QUAN THONG KE', 14, yPosition);
+        yPosition += 10;
 
-        pdf.setFontSize(13);
-        pdf.setTextColor(0, 0, 0);
         const overviewData = [
-            [`Tổng số người dùng:`, `${stats.totalUsers.toLocaleString()}`],
-            [`Tổng số khách sạn:`, `${stats.totalHotels.toLocaleString()}`],
-            [`Tổng số phòng:`, `${stats.totalRooms.toLocaleString()}`],
-            [`Tổng số đặt phòng:`, `${stats.totalBookings.toLocaleString()}`],
-            [`Tổng doanh thu:`, `${currency}${stats.totalRevenue.toLocaleString()}`],
-            [`Tăng trưởng doanh thu:`, `${stats.revenueGrowth >= 0 ? '+' : ''}${stats.revenueGrowth}%`],
+            ['Tong so nguoi dung', stats.totalUsers.toLocaleString()],
+            ['Tong so khach san', stats.totalHotels.toLocaleString()],
+            ['Tong so phong', stats.totalRooms.toLocaleString()],
+            ['Tong so dat phong', stats.totalBookings.toLocaleString()],
+            ['Tong doanh thu', `${currency}${stats.totalRevenue.toLocaleString()}`],
+            ['Tang truong doanh thu', `${stats.revenueGrowth >= 0 ? '+' : ''}${stats.revenueGrowth}%`],
         ];
 
-        overviewData.forEach(([label, value], index) => {
-            checkPageBreak(25);
-            
-            // Alternating row background
-            if (index % 2 === 0) {
-                pdf.setFillColor(249, 250, 251);
-                pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-            }
-            
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(12);
-            pdf.setTextColor(51, 51, 51);
-            pdf.text(label, margin + 5, yPosition);
-            
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(13);
-            pdf.setTextColor(30, 41, 59);
-            pdf.text(value, pageWidth - margin - 30, yPosition, { align: 'right' });
-            yPosition += lineHeight + 2;
+        autoTable(pdf, {
+            startY: yPosition,
+            head: [['Chi so', 'Gia tri']],
+            body: overviewData,
+            theme: 'grid',
+            styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
+            headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [249, 250, 251] },
         });
 
-        yPosition += 8;
+        yPosition = pdf.lastAutoTable.finalY + 15;
 
-        // Trạng thái đặt phòng
-        checkPageBreak(35);
-        pdf.setFillColor(249, 250, 251);
-        pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-        
-        pdf.setFontSize(18);
+        // Booking status section
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(30, 41, 59);
-        pdf.text('2. PHÂN BỐ TRẠNG THÁI ĐẶT PHÒNG', margin, yPosition);
-        yPosition += sectionSpacing;
+        pdf.text('PHAN BO TRANG THAI DAT PHONG', 14, yPosition);
+        yPosition += 10;
 
-        pdf.setFontSize(13);
-        pdf.setTextColor(0, 0, 0);
         const bookingStatusData = [
-            [`Đã xác nhận:`, `${stats.bookingStatusData.confirmed.toLocaleString()}`, [16, 185, 129]], // Green
-            [`Chờ xử lý:`, `${stats.bookingStatusData.pending.toLocaleString()}`, [59, 130, 246]], // Blue
-            [`Đã hủy:`, `${stats.bookingStatusData.cancelled.toLocaleString()}`, [239, 68, 68]], // Red
+            ['Da xac nhan', stats.bookingStatusData.confirmed.toLocaleString()],
+            ['Cho xu ly', stats.bookingStatusData.pending.toLocaleString()],
+            ['Da huy', stats.bookingStatusData.cancelled.toLocaleString()],
         ];
 
-        bookingStatusData.forEach(([label, value, color]) => {
-            checkPageBreak(25);
-            pdf.setFillColor(249, 250, 251);
-            pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-            
-            // Color dot
-            pdf.setFillColor(...color);
-            pdf.circle(margin + 8, yPosition, 2, 'F');
-            
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(12);
-            pdf.setTextColor(51, 51, 51);
-            pdf.text(label, margin + 15, yPosition);
-            
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(13);
-            pdf.setTextColor(30, 41, 59);
-            pdf.text(value, pageWidth - margin - 30, yPosition, { align: 'right' });
-            yPosition += lineHeight + 2;
+        autoTable(pdf, {
+            startY: yPosition,
+            head: [['Trang thai', 'So luong']],
+            body: bookingStatusData,
+            theme: 'grid',
+            styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
+            headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [249, 250, 251] },
         });
 
-        yPosition += 8;
+        yPosition = pdf.lastAutoTable.finalY + 15;
 
-        // Phân bố vai trò người dùng
-        checkPageBreak(35);
-        pdf.setFillColor(249, 250, 251);
-        pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-        
-        pdf.setFontSize(18);
+        // User role section
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(30, 41, 59);
-        pdf.text('3. PHÂN BỐ VAI TRÒ NGƯỜI DÙNG', margin, yPosition);
-        yPosition += sectionSpacing;
+        pdf.text('PHAN BO VAI TRO NGUOI DUNG', 14, yPosition);
+        yPosition += 10;
 
-        pdf.setFontSize(13);
-        pdf.setTextColor(0, 0, 0);
         const userRoleData = [
-            [`Người dùng:`, `${stats.userRoleData.user.toLocaleString()}`, [59, 130, 246]],
-            [`Chủ khách sạn:`, `${stats.userRoleData.hotelOwner.toLocaleString()}`, [16, 185, 129]],
-            [`Quản trị viên:`, `${stats.userRoleData.admin.toLocaleString()}`, [139, 92, 246]],
+            ['Nguoi dung', stats.userRoleData.user.toLocaleString()],
+            ['Chu khach san', stats.userRoleData.hotelOwner.toLocaleString()],
+            ['Quan tri vien', stats.userRoleData.admin.toLocaleString()],
         ];
 
-        userRoleData.forEach(([label, value, color]) => {
-            checkPageBreak(25);
-            pdf.setFillColor(249, 250, 251);
-            pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-            
-            pdf.setFillColor(...color);
-            pdf.circle(margin + 8, yPosition, 2, 'F');
-            
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(12);
-            pdf.setTextColor(51, 51, 51);
-            pdf.text(label, margin + 15, yPosition);
-            
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(13);
-            pdf.setTextColor(30, 41, 59);
-            pdf.text(value, pageWidth - margin - 30, yPosition, { align: 'right' });
-            yPosition += lineHeight + 2;
+        autoTable(pdf, {
+            startY: yPosition,
+            head: [['Vai tro', 'So luong']],
+            body: userRoleData,
+            theme: 'grid',
+            styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
+            headStyles: { fillColor: [139, 92, 246], textColor: [255, 255, 255], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [249, 250, 251] },
         });
 
-        yPosition += 8;
+        yPosition = pdf.lastAutoTable.finalY + 15;
 
-        // Doanh thu theo tháng
+        // Revenue by month
         if (stats.revenueByMonth && stats.revenueByMonth.length > 0) {
-            checkPageBreak(45);
-            pdf.setFillColor(249, 250, 251);
-            pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-            
-            pdf.setFontSize(18);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(30, 41, 59);
-            pdf.text('4. DOANH THU THEO THÁNG', margin, yPosition);
-            yPosition += sectionSpacing;
+            if (yPosition > 250) {
+                pdf.addPage();
+                yPosition = 20;
+            }
 
-            // Table header
-            pdf.setFillColor(59, 130, 246);
-            pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 4, 'F');
-            
-            pdf.setFontSize(12);
+            pdf.setFontSize(14);
             pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('Tháng', margin + 5, yPosition + 2);
-            pdf.text('Doanh thu', pageWidth - margin - 30, yPosition + 2, { align: 'right' });
-            yPosition += lineHeight + 6;
+            pdf.text('DOANH THU THEO THANG', 14, yPosition);
+            yPosition += 10;
 
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'normal');
-            stats.revenueByMonth.forEach((item, index) => {
-                checkPageBreak(25);
-                
-                if (index % 2 === 0) {
-                    pdf.setFillColor(249, 250, 251);
-                    pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-                }
-                
-                pdf.text(item.month || 'N/A', margin + 5, yPosition);
-                pdf.setFont('helvetica', 'bold');
-                pdf.text(`${currency}${item.revenue.toLocaleString()}`, pageWidth - margin - 30, yPosition, { align: 'right' });
-                pdf.setFont('helvetica', 'normal');
-                yPosition += lineHeight + 2;
+            const revenueData = stats.revenueByMonth.map(item => [
+                item.month || 'N/A',
+                `${currency}${item.revenue.toLocaleString()}`
+            ]);
+
+            autoTable(pdf, {
+                startY: yPosition,
+                head: [['Thang', 'Doanh thu']],
+                body: revenueData,
+                theme: 'grid',
+                styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
+                headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [249, 250, 251] },
             });
-            yPosition += 6;
+
+            yPosition = pdf.lastAutoTable.finalY + 15;
         }
 
-        // Khách sạn chờ duyệt
+        // Pending hotels
         if (stats.pendingHotels && stats.pendingHotels.length > 0) {
-            checkPageBreak(45);
-            pdf.setFillColor(249, 250, 251);
-            pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-            
-            pdf.setFontSize(18);
+            if (yPosition > 250) {
+                pdf.addPage();
+                yPosition = 20;
+            }
+
+            pdf.setFontSize(14);
             pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(30, 41, 59);
-            pdf.text('5. KHÁCH SẠN CHỜ DUYỆT', margin, yPosition);
-            yPosition += sectionSpacing;
+            pdf.text('KHACH SAN CHO DUYET', 14, yPosition);
+            yPosition += 10;
 
-            // Table header
-            pdf.setFillColor(59, 130, 246);
-            pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 4, 'F');
-            
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('Tên khách sạn', margin + 5, yPosition + 2);
-            pdf.text('Chủ sở hữu', pageWidth - margin - 40, yPosition + 2, { align: 'right' });
-            yPosition += lineHeight + 6;
+            const pendingHotelsData = stats.pendingHotels.slice(0, 10).map(hotel => [
+                hotel.name,
+                hotel.owner?.name || 'N/A',
+                new Date(hotel.createdAt).toLocaleDateString('vi-VN')
+            ]);
 
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFontSize(11);
-            pdf.setFont('helvetica', 'normal');
-            stats.pendingHotels.slice(0, 10).forEach((hotel, index) => {
-                checkPageBreak(25);
-                
-                if (index % 2 === 0) {
-                    pdf.setFillColor(249, 250, 251);
-                    pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-                }
-                
-                const hotelName = hotel.name.length > 40 ? hotel.name.substring(0, 37) + '...' : hotel.name;
-                pdf.text(hotelName, margin + 5, yPosition);
-                pdf.text(hotel.owner?.username || 'N/A', pageWidth - margin - 40, yPosition, { align: 'right' });
-                yPosition += lineHeight + 2;
-            });
-            yPosition += 6;
-        }
-
-        // Người dùng bị báo cáo
-        if (stats.reportedUsers && stats.reportedUsers.length > 0) {
-            checkPageBreak(45);
-            pdf.setFillColor(249, 250, 251);
-            pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-            
-            pdf.setFontSize(18);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(30, 41, 59);
-            pdf.text('6. NGƯỜI DÙNG BỊ BÁO CÁO', margin, yPosition);
-            yPosition += sectionSpacing;
-
-            // Table header
-            pdf.setFillColor(239, 68, 68);
-            pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 4, 'F');
-            
-            pdf.setFontSize(11);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('Tên người dùng', margin + 5, yPosition + 2);
-            pdf.text('Email', pageWidth - margin - 60, yPosition + 2);
-            pdf.text('Số lần BC', pageWidth - margin - 10, yPosition + 2, { align: 'right' });
-            yPosition += lineHeight + 6;
-
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFontSize(11);
-            pdf.setFont('helvetica', 'normal');
-            stats.reportedUsers.slice(0, 10).forEach((user, index) => {
-                checkPageBreak(25);
-                
-                if (index % 2 === 0) {
-                    pdf.setFillColor(249, 250, 251);
-                    pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-                }
-                
-                pdf.text(user.username, margin + 5, yPosition);
-                const email = user.email.length > 30 ? user.email.substring(0, 27) + '...' : user.email;
-                pdf.text(email, pageWidth - margin - 60, yPosition);
-                pdf.setFont('helvetica', 'bold');
-                pdf.text(`${user.reportCount || 0}`, pageWidth - margin - 10, yPosition, { align: 'right' });
-                pdf.setFont('helvetica', 'normal');
-                yPosition += lineHeight + 2;
+            autoTable(pdf, {
+                startY: yPosition,
+                head: [['Ten khach san', 'Chu so huu', 'Ngay dang ky']],
+                body: pendingHotelsData,
+                theme: 'grid',
+                styles: { font: 'helvetica', fontSize: 9, cellPadding: 3 },
+                headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [249, 250, 251] },
+                columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 60 }, 2: { cellWidth: 40 } },
             });
         }
 
@@ -305,27 +168,20 @@ export const exportAdminDashboardPDF = async (stats, currency, setExporting) => 
         const totalPages = pdf.internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
             pdf.setPage(i);
-            pdf.setFontSize(10);
+            pdf.setFontSize(9);
             pdf.setFont('helvetica', 'normal');
             pdf.setTextColor(128, 128, 128);
-            pdf.setDrawColor(200, 200, 200);
-            pdf.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-            pdf.text(
-                `Trang ${i} / ${totalPages}`,
-                pageWidth / 2,
-                pageHeight - 8,
-                { align: 'center' }
-            );
+            pdf.text(`Trang ${i} / ${totalPages}`, pageWidth / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
         }
 
-        // Save PDF
+        // Save
         const fileName = `BaoCaoThongKe_${new Date().toISOString().split('T')[0]}.pdf`;
         pdf.save(fileName);
 
-        toast.success('Đã xuất báo cáo PDF thành công!', { id: 'export-pdf' });
+        toast.success('Da xuat bao cao PDF thanh cong!', { id: 'export-pdf' });
     } catch (error) {
         console.error('Error exporting PDF:', error);
-        toast.error('Có lỗi xảy ra khi xuất PDF', { id: 'export-pdf' });
+        toast.error('Co loi xay ra khi xuat PDF', { id: 'export-pdf' });
     } finally {
         setExporting(false);
     }
@@ -337,223 +193,137 @@ export const exportAdminDashboardPDF = async (stats, currency, setExporting) => 
 export const exportOwnerDashboardPDF = async (stats, currency, setExporting) => {
     try {
         setExporting(true);
-        toast.loading('Đang tạo báo cáo PDF...', { id: 'export-pdf' });
+        toast.loading('Dang tao bao cao PDF...', { id: 'export-pdf' });
 
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        let yPosition = 25;
-        const margin = 20;
-        const lineHeight = 8;
-        const sectionSpacing = 12;
+        let yPosition = 20;
 
-        // Helper function to add new page if needed
-        const checkPageBreak = (requiredSpace = 20) => {
-            if (yPosition > pageHeight - requiredSpace) {
-                pdf.addPage();
-                yPosition = 25;
-                return true;
-            }
-            return false;
-        };
-
-        // Header với background
-        pdf.setFillColor(16, 185, 129); // Green color
-        pdf.rect(0, 0, pageWidth, 35, 'F');
-        
+        // Header
+        pdf.setFillColor(16, 185, 129);
+        pdf.rect(0, 0, pageWidth, 40, 'F');
         pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(24);
+        pdf.setFontSize(22);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('BÁO CÁO THỐNG KÊ KHÁCH SẠN', pageWidth / 2, 18, { align: 'center' });
-        
-        pdf.setFontSize(12);
+        pdf.text('BAO CAO THONG KE KHACH SAN', pageWidth / 2, 20, { align: 'center' });
+        pdf.setFontSize(11);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(`Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}`, pageWidth / 2, 28, { align: 'center' });
-        
-        pdf.setTextColor(0, 0, 0);
-        yPosition = 45;
+        pdf.text(`Ngay xuat: ${new Date().toLocaleDateString('vi-VN')}`, pageWidth / 2, 30, { align: 'center' });
 
-        // Tổng quan thống kê
-        pdf.setFillColor(249, 250, 251);
-        pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-        
-        pdf.setFontSize(18);
+        yPosition = 50;
+
+        // Overview section
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(30, 41, 59);
-        pdf.text('1. TỔNG QUAN THỐNG KÊ', margin, yPosition);
-        yPosition += sectionSpacing;
+        pdf.text('TONG QUAN THONG KE', 14, yPosition);
+        yPosition += 10;
 
-        pdf.setFontSize(13);
-        pdf.setTextColor(0, 0, 0);
         const overviewData = [
-            [`Tổng đặt phòng:`, `${stats.totalBookings.toLocaleString()}`],
-            [`Tổng phòng:`, `${stats.totalRooms.toLocaleString()}`],
-            [`Tổng doanh thu:`, `${currency}${stats.totalRevenue.toLocaleString()}`],
-            [`Tăng trưởng doanh thu:`, `${stats.revenueGrowth >= 0 ? '+' : ''}${stats.revenueGrowth}%`],
-            [`Đánh giá trung bình:`, `${stats.averageRating || 0} ⭐`],
-            [`Tổng số đánh giá:`, `${stats.totalReviews.toLocaleString()}`],
+            ['Tong dat phong', stats.totalBookings.toLocaleString()],
+            ['Tong phong', stats.totalRooms.toLocaleString()],
+            ['Tong doanh thu', `${currency}${stats.totalRevenue.toLocaleString()}`],
+            ['Tang truong doanh thu', `${stats.revenueGrowth >= 0 ? '+' : ''}${stats.revenueGrowth}%`],
+            ['Danh gia trung binh', `${stats.averageRating || 0} *`],
+            ['Tong so danh gia', stats.totalReviews.toLocaleString()],
         ];
 
-        overviewData.forEach(([label, value], index) => {
-            checkPageBreak(25);
-            
-            if (index % 2 === 0) {
-                pdf.setFillColor(249, 250, 251);
-                pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-            }
-            
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(12);
-            pdf.setTextColor(51, 51, 51);
-            pdf.text(label, margin + 5, yPosition);
-            
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(13);
-            pdf.setTextColor(30, 41, 59);
-            pdf.text(value, pageWidth - margin - 30, yPosition, { align: 'right' });
-            yPosition += lineHeight + 2;
+        autoTable(pdf, {
+            startY: yPosition,
+            head: [['Chi so', 'Gia tri']],
+            body: overviewData,
+            theme: 'grid',
+            styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
+            headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [249, 250, 251] },
         });
 
-        yPosition += 8;
+        yPosition = pdf.lastAutoTable.finalY + 15;
 
-        // Trạng thái đặt phòng
-        checkPageBreak(35);
-        pdf.setFillColor(249, 250, 251);
-        pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-        
-        pdf.setFontSize(18);
+        // Booking status section
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(30, 41, 59);
-        pdf.text('2. PHÂN BỐ TRẠNG THÁI ĐẶT PHÒNG', margin, yPosition);
-        yPosition += sectionSpacing;
+        pdf.text('PHAN BO TRANG THAI DAT PHONG', 14, yPosition);
+        yPosition += 10;
 
-        pdf.setFontSize(13);
-        pdf.setTextColor(0, 0, 0);
         const bookingStatusData = [
-            [`Chờ xử lý:`, `${stats.bookingStatusData.pending.toLocaleString()}`, [245, 158, 11]], // Yellow
-            [`Đã xác nhận:`, `${stats.bookingStatusData.confirmed.toLocaleString()}`, [16, 185, 129]], // Green
-            [`Đã hủy:`, `${stats.bookingStatusData.cancelled.toLocaleString()}`, [239, 68, 68]], // Red
-            [`Hoàn thành:`, `${stats.bookingStatusData.completed.toLocaleString()}`, [59, 130, 246]], // Blue
+            ['Cho xu ly', stats.bookingStatusData.pending.toLocaleString()],
+            ['Da xac nhan', stats.bookingStatusData.confirmed.toLocaleString()],
+            ['Da huy', stats.bookingStatusData.cancelled.toLocaleString()],
+            ['Hoan thanh', stats.bookingStatusData.completed.toLocaleString()],
         ].filter(([_, value]) => parseInt(value.replace(/,/g, '')) > 0);
 
-        bookingStatusData.forEach(([label, value, color]) => {
-            checkPageBreak(25);
-            pdf.setFillColor(249, 250, 251);
-            pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-            
-            pdf.setFillColor(...color);
-            pdf.circle(margin + 8, yPosition, 2, 'F');
-            
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(12);
-            pdf.setTextColor(51, 51, 51);
-            pdf.text(label, margin + 15, yPosition);
-            
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(13);
-            pdf.setTextColor(30, 41, 59);
-            pdf.text(value, pageWidth - margin - 30, yPosition, { align: 'right' });
-            yPosition += lineHeight + 2;
+        autoTable(pdf, {
+            startY: yPosition,
+            head: [['Trang thai', 'So luong']],
+            body: bookingStatusData,
+            theme: 'grid',
+            styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
+            headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [249, 250, 251] },
         });
 
-        yPosition += 8;
+        yPosition = pdf.lastAutoTable.finalY + 15;
 
-        // Doanh thu theo tháng
+        // Revenue by month
         if (stats.revenueByMonth && stats.revenueByMonth.length > 0) {
-            checkPageBreak(45);
-            pdf.setFillColor(249, 250, 251);
-            pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-            
-            pdf.setFontSize(18);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(30, 41, 59);
-            pdf.text('3. DOANH THU THEO THÁNG', margin, yPosition);
-            yPosition += sectionSpacing;
+            if (yPosition > 250) {
+                pdf.addPage();
+                yPosition = 20;
+            }
 
-            // Table header
-            pdf.setFillColor(16, 185, 129);
-            pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 4, 'F');
-            
-            pdf.setFontSize(12);
+            pdf.setFontSize(14);
             pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('Tháng', margin + 5, yPosition + 2);
-            pdf.text('Doanh thu', pageWidth - margin - 50, yPosition + 2);
-            pdf.text('Đặt phòng', pageWidth - margin - 10, yPosition + 2, { align: 'right' });
-            yPosition += lineHeight + 6;
+            pdf.text('DOANH THU THEO THANG', 14, yPosition);
+            yPosition += 10;
 
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFontSize(11);
-            pdf.setFont('helvetica', 'normal');
-            stats.revenueByMonth.forEach((item, index) => {
-                checkPageBreak(25);
-                
-                if (index % 2 === 0) {
-                    pdf.setFillColor(249, 250, 251);
-                    pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-                }
-                
-                pdf.text(item.month || 'N/A', margin + 5, yPosition);
-                pdf.setFont('helvetica', 'bold');
-                pdf.text(`${currency}${item.revenue.toLocaleString()}`, pageWidth - margin - 50, yPosition);
-                pdf.text(`${item.bookings || 0}`, pageWidth - margin - 10, yPosition, { align: 'right' });
-                pdf.setFont('helvetica', 'normal');
-                yPosition += lineHeight + 2;
+            const revenueData = stats.revenueByMonth.map(item => [
+                item.month || 'N/A',
+                `${currency}${item.revenue.toLocaleString()}`,
+                (item.bookings || 0).toString()
+            ]);
+
+            autoTable(pdf, {
+                startY: yPosition,
+                head: [['Thang', 'Doanh thu', 'Dat phong']],
+                body: revenueData,
+                theme: 'grid',
+                styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
+                headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [249, 250, 251] },
             });
-            yPosition += 6;
+
+            yPosition = pdf.lastAutoTable.finalY + 15;
         }
 
-        // Đặt phòng gần đây
+        // Recent bookings
         if (stats.recentBookings && stats.recentBookings.length > 0) {
-            checkPageBreak(50);
-            pdf.setFillColor(249, 250, 251);
-            pdf.rect(margin - 5, yPosition - 7, pageWidth - 2 * margin + 10, 8, 'F');
-            
-            pdf.setFontSize(18);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(30, 41, 59);
-            pdf.text('4. ĐẶT PHÒNG GẦN ĐÂY', margin, yPosition);
-            yPosition += sectionSpacing;
+            if (yPosition > 250) {
+                pdf.addPage();
+                yPosition = 20;
+            }
 
-            // Table header
-            pdf.setFillColor(59, 130, 246);
-            pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 4, 'F');
-            
-            pdf.setFontSize(10);
+            pdf.setFontSize(14);
             pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('Khách hàng', margin + 5, yPosition + 2);
-            pdf.text('Phòng', pageWidth - margin - 100, yPosition + 2);
-            pdf.text('Ngày nhận', pageWidth - margin - 60, yPosition + 2);
-            pdf.text('Tổng tiền', pageWidth - margin - 10, yPosition + 2, { align: 'right' });
-            yPosition += lineHeight + 6;
+            pdf.text('DAT PHONG GAN DAY', 14, yPosition);
+            yPosition += 10;
 
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'normal');
-            stats.recentBookings.slice(0, 15).forEach((booking, index) => {
-                checkPageBreak(25);
-                
-                if (index % 2 === 0) {
-                    pdf.setFillColor(249, 250, 251);
-                    pdf.rect(margin - 2, yPosition - 6, pageWidth - 2 * margin + 4, lineHeight + 2, 'F');
-                }
-                
-                const username = (booking.user?.username || 'N/A').length > 15 
-                    ? (booking.user?.username || 'N/A').substring(0, 12) + '...' 
-                    : (booking.user?.username || 'N/A');
-                pdf.text(username, margin + 5, yPosition);
-                
-                const roomType = translateRoomType(booking.room?.roomType) || 'N/A';
-                const roomTypeShort = roomType.length > 12 ? roomType.substring(0, 9) + '...' : roomType;
-                pdf.text(roomTypeShort, pageWidth - margin - 100, yPosition);
-                
-                pdf.text(new Date(booking.checkInDate).toLocaleDateString('vi-VN'), pageWidth - margin - 60, yPosition);
-                
-                pdf.setFont('helvetica', 'bold');
-                pdf.text(`${currency}${(booking.totalPrice || 0).toLocaleString()}`, pageWidth - margin - 10, yPosition, { align: 'right' });
-                pdf.setFont('helvetica', 'normal');
-                yPosition += lineHeight + 2;
+            const recentBookingsData = stats.recentBookings.slice(0, 15).map(booking => [
+                booking.user?.name || 'N/A',
+                translateRoomType(booking.room?.roomType) || 'N/A',
+                new Date(booking.checkInDate).toLocaleDateString('vi-VN'),
+                `${currency}${(booking.totalPrice || 0).toLocaleString()}`
+            ]);
+
+            autoTable(pdf, {
+                startY: yPosition,
+                head: [['Khach hang', 'Loai phong', 'Ngay nhan', 'Tong tien']],
+                body: recentBookingsData,
+                theme: 'grid',
+                styles: { font: 'helvetica', fontSize: 9, cellPadding: 3 },
+                headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [249, 250, 251] },
+                columnStyles: { 0: { cellWidth: 45 }, 1: { cellWidth: 45 }, 2: { cellWidth: 35 }, 3: { cellWidth: 45 } },
             });
         }
 
@@ -561,29 +331,21 @@ export const exportOwnerDashboardPDF = async (stats, currency, setExporting) => 
         const totalPages = pdf.internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
             pdf.setPage(i);
-            pdf.setFontSize(10);
+            pdf.setFontSize(9);
             pdf.setFont('helvetica', 'normal');
             pdf.setTextColor(128, 128, 128);
-            pdf.setDrawColor(200, 200, 200);
-            pdf.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-            pdf.text(
-                `Trang ${i} / ${totalPages}`,
-                pageWidth / 2,
-                pageHeight - 8,
-                { align: 'center' }
-            );
+            pdf.text(`Trang ${i} / ${totalPages}`, pageWidth / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
         }
 
-        // Save PDF
+        // Save
         const fileName = `BaoCaoKhachSan_${new Date().toISOString().split('T')[0]}.pdf`;
         pdf.save(fileName);
 
-        toast.success('Đã xuất báo cáo PDF thành công!', { id: 'export-pdf' });
+        toast.success('Da xuat bao cao PDF thanh cong!', { id: 'export-pdf' });
     } catch (error) {
         console.error('Error exporting PDF:', error);
-        toast.error('Có lỗi xảy ra khi xuất PDF', { id: 'export-pdf' });
+        toast.error('Co loi xay ra khi xuat PDF', { id: 'export-pdf' });
     } finally {
         setExporting(false);
     }
 };
-

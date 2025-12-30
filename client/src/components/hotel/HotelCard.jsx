@@ -6,7 +6,7 @@ import { useAppContext } from '../../context/AppContext';
 
 const HotelCard = ({ room, index }) => {
     const { currency } = useAppContext();
-    const hasDiscount = room.discount && Number(room.discount) > 0;
+    const hasDiscount = room.discount > 0;
     const discountedPrice = hasDiscount
         ? room.pricePerNight * (1 - room.discount / 100)
         : room.pricePerNight;

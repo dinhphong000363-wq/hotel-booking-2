@@ -9,6 +9,7 @@ import {
   updateBooking,
   cancelBooking,
   cancelBookingByOwner,
+  autoCompleteExpiredBookings,
 } from "../controllers/bookingControllers.js";
 import { protect, owner } from "../middleware/authMiddleware.js";
 
@@ -17,6 +18,9 @@ const bookingRouter = express.Router();
 bookingRouter.post("/check-availability", checkAvailabilityAPI);
 bookingRouter.post("/book", protect, createBooking);
 bookingRouter.get("/user", protect, getUserBookings);
+
+// Auto-complete expired bookings (can be called by cron job or manually)
+bookingRouter.get("/auto-complete", autoCompleteExpiredBookings);
 
 // Owner bookings management
 bookingRouter.get("/owner", protect, owner, getHotelBookings);

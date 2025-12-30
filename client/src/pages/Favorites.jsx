@@ -3,8 +3,10 @@ import axios from 'axios'
 import { Link } from 'react-router-dom'
 import { translateAmenity, translateRoomType } from '../utils/translations'
 import { isAuthenticated, getAuthHeaders } from '../utils/authUtils'
+import { useAppContext } from '../context/AppContext'
 
 const Favorites = () => {
+  const { currency } = useAppContext()
   const [loading, setLoading] = useState(true)
   const [favorites, setFavorites] = useState([])
   const [error, setError] = useState('')
@@ -80,7 +82,7 @@ const Favorites = () => {
                     {Array.isArray(room.amenities) ? room.amenities.slice(0, 3).map(translateAmenity).join(' • ') : ''}
                   </div>
                   <div className="mt-2 font-semibold">
-                    {typeof room.pricePerNight === 'number' ? `${room.pricePerNight.toLocaleString()} đ/đêm` : ''}
+                    {typeof room.pricePerNight === 'number' ? `${currency}${room.pricePerNight.toLocaleString('vi-VN')}/đêm` : ''}
                   </div>
                 </div>
               </Link>

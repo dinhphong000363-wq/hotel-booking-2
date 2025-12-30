@@ -7,7 +7,7 @@ import { useAppContext } from '../../context/AppContext';
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { setUser, setIsAdmin, setIsOwner, setUserRole } = useAppContext();
+    const { setUser, setIsAdmin, setIsOwner, setUserRole, setSearchedCities } = useAppContext();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -66,18 +66,15 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                 setUserRole(userData.role);
                 setIsAdmin(userData.role === 'admin');
                 setIsOwner(userData.role === 'hotelOwner');
+                setSearchedCities(userData.recentSearchedCities || []);
 
                 toast.success('Đăng nhập thành công!');
                 onClose();
 
-                // Redirect based on role using navigate
-                if (userData.role === 'admin') {
-                    navigate('/admin/dashboard');
-                } else if (userData.role === 'hotelOwner') {
-                    navigate('/owner');
-                } else {
-                    navigate('/');
-                }
+                // Force page reload to ensure all components update
+                window.location.href = userData.role === 'admin' ? '/admin/dashboard'
+                    : userData.role === 'hotelOwner' ? '/owner'
+                        : '/';
             }
         } catch (error) {
             const message = error.response?.data?.message || 'Đăng nhập thất bại';

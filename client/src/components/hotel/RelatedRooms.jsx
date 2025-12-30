@@ -85,7 +85,7 @@ const RelatedRooms = ({ rooms, currentRoomId, navigate, currency }) => {
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
                 {relatedRooms.map((otherRoom) => {
-                    const hasDiscount = otherRoom.discount && otherRoom.discount > 0;
+                    const hasDiscount = otherRoom.discount > 0;
                     const discountedPrice = hasDiscount
                         ? otherRoom.pricePerNight * (1 - otherRoom.discount / 100)
                         : otherRoom.pricePerNight;
